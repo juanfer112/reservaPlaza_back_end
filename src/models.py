@@ -2,18 +2,88 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-class User(db.Model):
+class Enterprise(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    last_name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(80), unique=False, nullable=False)
-    is_active = db.Column(db.Boolean(), unique=False, nullable=False)
-
-    def __repr__(self):
-        return '<User %r>' % self.username
+    password = db.Column(db.String(80), nullable=False) ################ VERIFY
+    cif = db.Column(db.String(20), nullable=False)
+    phone = db.Column(db.Integer, unique=True, nullable=False)
+    tot_hours = db.Column(db.Integer, nullable=False)
+    is_admin = db.Column(db.Boolean(), nullable=False)
 
     def serialize(self):
         return {
             "id": self.id,
+            "name": self.name,
+            "last_name": self.last_name,
             "email": self.email,
-            # do not serialize the password, its a security breach
+            "password": self.password,
+            "cif": self.cif,
+            "phone": self.phone,
+            "tot_hours": self.tot_hours, 
+            "is_admin": self.is_admin           
+        }
+
+class Schedule(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Integer, nullable=False)
+    hour_start = db.Column(db.Integer, nullable=False)
+    hour_end = db.Column(db.Integer, nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "date": self.date,
+            "hour_start": self.hour_start,
+            "hour_end": self.hour_end,
+        }
+
+class Space(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    def serialize(self):
+        return {
+            "id": self.id
+        }
+
+class Equipment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    quantity = db.Column(db.Integer, nullable=False)
+    name = db.Column(db.String(250), nullable=False)
+    description = db.Column(db.String(250), nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.id,            
+            "quantity": self.quantity,
+            "name": self.name,
+            "description": self.description,
+        }
+
+class SpaceType(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    description = db.Column(db.String(250), nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.id,            
+            "name": self.name,
+            "description": self.description
+        }
+
+class Brand(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    description = db.Column(db.String(250), nullable=False)
+    logo = db.Column(db.String(250), nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.id,            
+            "name": self.name,
+            "description": self.description,
+            "logo": self.logo
         }

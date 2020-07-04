@@ -9,9 +9,11 @@ class Enterprise(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), nullable=False) ################ VERIFY
     cif = db.Column(db.String(20), nullable=False)
-    phone = db.Column(db.Integer, unique=True, nullable=False)
+    phone = db.Column(db.String(20), unique=True, nullable=False)
     tot_hours = db.Column(db.Integer, nullable=False)
     is_admin = db.Column(db.Boolean(), nullable=False)
+    brand = db.relationship('Brand', backref='enterprise')
+    schedule = db.relationship('Schedule', backref='enterprise')
 
     def serialize(self):
         return {
@@ -23,7 +25,25 @@ class Enterprise(db.Model):
             "cif": self.cif,
             "phone": self.phone,
             "tot_hours": self.tot_hours, 
-            "is_admin": self.is_admin           
+            "is_admin": self.is_admin,
+            "brand": list(map(lambda x: x.serialize(), self.brand)),
+            "schedule": list(map(lambda x: x.serialize(), self.schedule)) 
+        }
+
+class Brand(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    description = db.Column(db.String(250), nullable=False)
+    logo = db.Column(db.String(250), nullable=False)
+    enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id'),
+        nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.id,            
+            "name": self.name,
+            "description": self.description,
+            "logo": self.logo
         }
 
 class Schedule(db.Model):
@@ -31,6 +51,10 @@ class Schedule(db.Model):
     date = db.Column(db.Integer, nullable=False)
     hour_start = db.Column(db.Integer, nullable=False)
     hour_end = db.Column(db.Integer, nullable=False)
+    enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id'),
+        nullable=False)
+    space_id = db.Column(db.Integer, db.ForeignKey('space.id'),
+        nullable=False)
 
     def serialize(self):
         return {
@@ -42,10 +66,16 @@ class Schedule(db.Model):
 
 class Space(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    space_type_id = db.Column(db.Integer, db.ForeignKey('spacetype.id'),
+        nullable=False)
+    schedule = db.relationship('Schedule', backref='space')
+    equipment = db.relationship('Equipment', backref='space')
 
     def serialize(self):
         return {
-            "id": self.id
+            "id": self.id,
+            "schedule": list(map(lambda x: x.serialize(), self.schedule)),
+            "equipment": list(map(lambda x: x.serialize(), self.equipment))
         }
 
 class Equipment(db.Model):
@@ -53,6 +83,8 @@ class Equipment(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(250), nullable=False)
     description = db.Column(db.String(250), nullable=False)
+    space_id = db.Column(db.Integer, db.ForeignKey('space.id'),
+        nullable=False)
 
     def serialize(self):
         return {
@@ -62,28 +94,17 @@ class Equipment(db.Model):
             "description": self.description,
         }
 
-class SpaceType(db.Model):
+class Spacetype(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
     description = db.Column(db.String(250), nullable=False)
-
-    def serialize(self):
-        return {
-            "id": self.id,            
-            "name": self.name,
-            "description": self.description
-        }
-
-class Brand(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), nullable=False)
-    description = db.Column(db.String(250), nullable=False)
-    logo = db.Column(db.String(250), nullable=False)
+    space = db.relationship('Space', backref='spacetype')
 
     def serialize(self):
         return {
             "id": self.id,            
             "name": self.name,
             "description": self.description,
-            "logo": self.logo
+            "space": list(map(lambda x: x.serialize(), self.space))
         }
+

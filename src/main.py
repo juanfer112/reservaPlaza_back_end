@@ -31,13 +31,11 @@ def sitemap():
     return generate_sitemap(app)
 
 @app.route('/enterprise', methods=['GET', 'POST'])
-def handle_enterprise():
-
+def handle_enterprises():
     if request.method == 'GET':
-        all_people = Enterprise.query.all()
-        all_people = list(map(lambda x: x.serialize(), all_people))
-        return jsonify(all_people), 200
-    
+        enterprises = Enterprise.query.all()
+        enterprises = list(map(lambda x: x.serialize(), enterprises))
+        return jsonify(enterprises), 200    
     if request.method == 'POST':
         body = request.get_json()
         enterprise = Enterprise(
@@ -48,13 +46,101 @@ def handle_enterprise():
             cif=body['cif'],
             phone=body['phone'], 
             tot_hours=body['tot_hours'], 
-            is_admin=False
-        )
+            is_admin=body['is_admin']
+            )
         db.session.add(enterprise)
         db.session.commit()
         return "ok", 200
-
     return "Invalid Method", 404
+
+@app.route('/enterprise/<int:id>')
+def handle_enterprise(id):
+    enterprise = Enterprise.query.filter_by(id=id)
+    enterprise = list(map(lambda x: x.serialize(), enterprise))
+    return jsonify(enterprise), 200
+ 
+@app.route('/brand')
+def handle_brands():
+    brands = Brand.query.all()
+    brands = list(map(lambda x: x.serialize(), brands))
+    return jsonify(brands), 200  
+
+@app.route('/brand/<int:id>', methods=['GET', 'POST'])
+def handle_brand(id):
+    if request.method == 'GET':
+        brand = Brand.query.filter_by(enterprise_id=id)
+        brand = list(map(lambda x: x.serialize(), brand))
+        return jsonify(brand), 200    
+    if request.method == 'POST':
+        body = request.get_json()
+        brand = Brand(
+            name=body['name'], 
+            description=body['description'],             
+            logo=body['logo'],
+            enterprise_id=id
+            )
+        db.session.add(brand)
+        db.session.commit()
+        return "ok", 200
+    return "Invalid Method", 404
+
+@app.route('/schedule')
+def handle_schedules():
+    schedules = Schedule.query.all()
+    schedules = list(map(lambda x: x.serialize(), schedules))
+    return jsonify(schedules), 200
+
+@app.route('/schedule/<int:id>', methods=['GET', 'POST'])
+def handle_schedule(id):
+    if request.method == 'GET':
+        schedule = Schedule.query.filter_by(enterprise_id=id)
+        schedule = list(map(lambda x: x.serialize(), schedule))
+        return jsonify(schedule), 200    
+    if request.method == 'POST':
+        body = request.get_json()
+        schedule = Schedule(
+            date=body['date'], 
+            hour_start=body['hour_start'],             
+            hour_end=body['hour_end'],
+            enterprise_id=id,
+            space_id=body['space_id']
+            )
+        db.session.add(schedule)
+        db.session.commit()
+        return "ok", 200
+    return "Invalid Method", 404  
+
+@app.route('/space')
+def handle_spaces():
+    schedules = Space.query.all()
+    schedules = list(map(lambda x: x.serialize(), schedules))
+    return jsonify(schedules), 200
+
+@app.route('/space/<int:id>', methods=['POST'])
+def handle_space(id):
+    space = Space(
+        spacetype_id=id
+    )
+    db.session.add(space)
+    db.session.commit()
+    return "ok", 200
+
+@app.route('/spacetype')
+def handle_spacetypes():
+    spacetype = Spacetype.query.all()
+    spacetype = list(map(lambda x: x.serialize(), spacetype))
+    return jsonify(spacetype), 200
+
+@app.route('/spacetype', methods=['POST'])
+def handle_spacetype():
+    body = request.get_json()
+    spacetype = Spacetype(
+        name=body['name'],
+        description=body['description']
+    )
+    db.session.add(spacetype)
+    db.session.commit()
+    return "ok", 200
 
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))

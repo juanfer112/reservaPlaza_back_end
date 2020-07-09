@@ -11,9 +11,9 @@ class Enterprise(db.Model):
     cif = db.Column(db.String(20), nullable=False)
     phone = db.Column(db.String(20), unique=True, nullable=False)
     tot_hours = db.Column(db.Integer, nullable=False)
-    is_admin = db.Column(db.Boolean(), nullable=False)
-    brand = db.relationship('Brand', backref='enterprise', lazy=True)
-    schedule = db.relationship('Schedule', backref='enterprise', lazy=True)
+    brands = db.relationship('Brand', backref='enterprise', lazy=True)
+    schedules = db.relationship('Schedule', backref='enterprise', lazy=True)
+    
     def serialize(self):
         return {
             "id": self.id,
@@ -24,11 +24,10 @@ class Enterprise(db.Model):
             "cif": self.cif,
             "phone": self.phone,
             "tot_hours": self.tot_hours, 
-            "is_admin": self.is_admin,
-            "brand": list(map(lambda x: x.serialize(), self.brand)),
-            "schedule": list(map(lambda x: x.serialize(), self.schedule)) 
+            "brands": list(map(lambda x: x.serialize(), self.brands)),
+            "schedules": list(map(lambda x: x.serialize(), self.schedules)) 
         }
-
+        
 class Brand(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
@@ -36,6 +35,7 @@ class Brand(db.Model):
     logo = db.Column(db.String(250), nullable=False)
     enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id'),
         nullable=False)
+    
     def serialize(self):
         return {
             "id": self.id,            
@@ -47,30 +47,32 @@ class Brand(db.Model):
 
 
 class Spacetype(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)  
     description = db.Column(db.String(250), nullable=False)
-    space = db.relationship('Space', backref='spacetype', lazy=True)
+    spaces = db.relationship('Space', backref='spacetype', lazy=True)
+    
     def serialize(self):
         return {
-            "id": self.id,            
-            "name": self.name,
+            "id": self.id,           
             "description": self.description,
-            "space": list(map(lambda x: x.serialize(), self.space))
+            "spaces": list(map(lambda x: x.serialize(), self.spaces))
         }
 
 class Space(db.Model):
-    id = db.Column(db.Integer, primary_key=True)    
-    equipment = db.relationship('Equipment', backref='space', lazy=True)
-    schedule = db.relationship('Schedule', backref='space', lazy=True)
+    id = db.Column(db.Integer, primary_key=True)   
+    name = db.Column(db.String(250), nullable=False) 
+    equipments = db.relationship('Equipment', backref='space', lazy=True)
+    schedules = db.relationship('Schedule', backref='space', lazy=True)
     spacetype_id = db.Column(db.Integer, db.ForeignKey('spacetype.id'),
         nullable=False)
+    
     def serialize(self):
         return {
             "id": self.id,
+            "name": self.name,
             "spacetypeID": self.spacetype_id,
-            "equipment": list(map(lambda x: x.serialize(), self.equipment)),
-            "schedule": list(map(lambda x: x.serialize(), self.schedule))
+            "equipments": list(map(lambda x: x.serialize(), self.equipments)),
+            "schedules": list(map(lambda x: x.serialize(), self.schedules))
         }
 
 class Schedule(db.Model):
@@ -82,6 +84,7 @@ class Schedule(db.Model):
         nullable=False)
     space_id = db.Column(db.Integer, db.ForeignKey('space.id'), 
         nullable=False)
+    
     def serialize(self):
         return {
             "id": self.id,
@@ -99,6 +102,7 @@ class Equipment(db.Model):
     description = db.Column(db.String(250), nullable=False)
     space_id = db.Column(db.Integer, db.ForeignKey('space.id'),
         nullable=False)
+    
     def serialize(self):
         return {
             "id": self.id,            

@@ -48,14 +48,14 @@ def handle_enterprises():
         return "Enterprise correctly created", 200
     return "Invalid Method", 404
 
-@app.route('/enterprise/<int:id>', methods=['GET', 'PUT'])
+@app.route('/enterprise/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 def handle_enterprise(id):
     if request.method == 'GET':
-        enterprise = Enterprise.query.filter_by(id=id)
+        enterprise = Enterprise.query.get(id)
         enterprise = list(map(lambda x: x.serialize(), enterprise))
         return jsonify(enterprise), 200
     if request.method == 'PUT':
-        body = request.get_json().items()
+        body = request.get_json()
         update = Enterprise.query.get(id)
         if update is None:
             raise APIException('Enterprise not found', status_code=404)
@@ -73,6 +73,11 @@ def handle_enterprise(id):
             update.phone = body["phone"]
         if "tot_hours" in body:
             update.tot_hours = body["tot_hours"]
+        db.session.commit()
+    if request.method == 'DELETE':
+        enterprise = Enterprise.query().get(id)
+        ## ??? ###
+        db.session.delete(enterprise)
         db.session.commit()
         return "Enterprise correctly edited", 200
     return "Invalid Method", 404
@@ -96,14 +101,14 @@ def handle_brands():
         return "Brand correctly created", 200
     return "Invalid Method", 404
 
-@app.route('/brand/<int:id>', methods=['GET', 'PUT'])
+@app.route('/brand/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 def handle_brand(id):
     if request.method == 'GET':
-        brand = Brand.query.filter_by(id=id)
+        brand = Brand.query.get(id)
         brand = list(map(lambda x: x.serialize(), brand))
         return jsonify(brand), 200
     if request.method == 'PUT':
-        body = request.get_json().items()
+        body = request.get_json()
         update = Enterprise.query.get(id)
         if update is None:
             raise APIException('Enterprise not found', status_code=404)
@@ -115,6 +120,10 @@ def handle_brand(id):
             update.logo = body["logo"]      
         db.session.commit()
         return "Brand correctly edited", 200
+    if request.method == 'DELETE':
+        brand = Brand.query().get(id)
+        db.session.delete(brand)
+        db.session.commit()
     return "Invalid Method", 404
 
 @app.route('/schedules', methods=['GET', 'POST'])
@@ -140,11 +149,11 @@ def handle_schedules():
 @app.route('/schedule/<int:id>', methods=['GET', 'PUT'])
 def handle_schedule(id):
     if request.method == 'GET':
-        schedule = Schedule.query.filter_by(id=id)
+        schedule = Schedule.query.get(id)
         schedule = list(map(lambda x: x.serialize(), schedule))
         return jsonify(schedule), 200
     if request.method == 'PUT':
-        body = request.get_json().items()
+        body = request.get_json()
         update = Enterprise.query.get(id)
         if update is None:
             raise APIException('Enterprise not found', status_code=404)
@@ -178,11 +187,11 @@ def handle_spaces():
 @app.route('/space/<int:id>', methods=['GET', 'PUT'])
 def handle_space(id):
     if request.method == 'GET':
-        space = Space.query.filter_by(id=id)
+        space = Space.query.get(id)
         space = list(map(lambda x: x.serialize(), space))
         return jsonify(space), 200
     if request.method == 'PUT':
-        body = request.get_json().items()
+        body = request.get_json()
         update = Enterprise.query.get(id)
         if update is None:
             raise APIException('Enterprise not found', status_code=404)
@@ -211,11 +220,11 @@ def handle_spacetypes():
 @app.route('/spacetype/<int:id>', methods=['GET', 'PUT'])
 def handle_spacetype(id):
     if request.method == 'GET':
-        spacetype = Spacetype.query.filter_by(id=id)
+        spacetype = Spacetype.query.get(id)
         spacetype = list(map(lambda x: x.serialize(), spacetype))
         return jsonify(spacetype), 200
     if request.method == 'PUT':
-        body = request.get_json().items()
+        body = request.get_json()
         update = Enterprise.query.get(id)
         if update is None:
             raise APIException('Enterprise not found', status_code=404)
@@ -247,11 +256,11 @@ def handle_equipments():
 @app.route('/equipment/<int:id>', methods=['GET', 'PUT'])
 def handle_equipment(id):
     if request.method == 'GET':
-        equipments = Equipments.query.filter_by(id=id)
+        equipments = Equipments.query.get(id)
         equipments = list(map(lambda x: x.serialize(), equipments))
         return jsonify(equipments), 200
     if request.method == 'PUT':
-        body = request.get_json().items()
+        body = request.get_json()
         update = Enterprise.query.get(id)
         if update is None:
             raise APIException('Enterprise not found', status_code=404)

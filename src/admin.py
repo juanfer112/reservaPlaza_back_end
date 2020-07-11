@@ -14,11 +14,7 @@ class MyModelViewActive(MyModelView):
     def delete_model(self, model):
         try:
             self.on_model_delete(model)            
-            model.is_active = False
-            #brands = Brand.query.filter_by(enterprise_id=model.id)
-            #brands = list(map(lambda x: x.serialize(), brands))
-            #for x in brands:
-            #    x['is_active']=False            
+            model.is_active = FalseS          
             db.session.commit()
         except Exception as ex:
             if not self.handle_view_exception(ex):
@@ -36,10 +32,7 @@ class MyModelViewNotActive(MyModelView):
 
 class MyModelViewBrands(MyModelView):
     def get_query(self):
-        brand = self.session.query(self.model)
-        brand = list(map(lambda x: x.serialize(), brand))
-        enterprise = Enterprise.query.get(brand[0]['enterpriseID'])               
-        return self.session.query(self.model).filter(enterprise.is_active==True)
+        return self.session.query(self.model).join(Enterprise).filter(Enterprise.is_active==True)
         
 def setup_admin(app):
     app.secret_key = os.environ.get('FLASK_APP_KEY', 'sample key')

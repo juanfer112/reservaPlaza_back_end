@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, url_for
+from flask import Flask, request, jsonify
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
@@ -12,6 +12,7 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_CONNECTION_STRING')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 init_database()
 MIGRATE = Migrate(app, db)
 db.init_app(app)
@@ -48,7 +49,7 @@ def handle_enterprises():
         return "Enterprise correctly created", 200
     return "Invalid Method", 404
 
-@app.route('/enterprise/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@app.route('/enterprise/<int:id>', methods=['GET', 'PUT'])
 def handle_enterprise(id):
     if request.method == 'GET':
         enterprise = Enterprise.query.get(id)
@@ -74,11 +75,6 @@ def handle_enterprise(id):
         if "tot_hours" in body:
             update.tot_hours = body["tot_hours"]
         db.session.commit()
-    if request.method == 'DELETE':
-        enterprise = Enterprise.query().get(id)
-        ## ??? ###
-        db.session.delete(enterprise)
-        db.session.commit()
         return "Enterprise correctly edited", 200
     return "Invalid Method", 404
 
@@ -101,7 +97,7 @@ def handle_brands():
         return "Brand correctly created", 200
     return "Invalid Method", 404
 
-@app.route('/brand/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@app.route('/brand/<int:id>', methods=['GET', 'PUT'])
 def handle_brand(id):
     if request.method == 'GET':
         brand = Brand.query.get(id)
@@ -120,10 +116,6 @@ def handle_brand(id):
             update.logo = body["logo"]      
         db.session.commit()
         return "Brand correctly edited", 200
-    if request.method == 'DELETE':
-        brand = Brand.query().get(id)
-        db.session.delete(brand)
-        db.session.commit()
     return "Invalid Method", 404
 
 @app.route('/schedules', methods=['GET', 'POST'])

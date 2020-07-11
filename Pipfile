@@ -21,6 +21,7 @@ flask-admin = "*"
 sqlalchemy-utils = "*"
 eralchemy = "*"
 graphviz = "*"
+flask-login = "*"
 
 [requires]
 python_version = "3.7"

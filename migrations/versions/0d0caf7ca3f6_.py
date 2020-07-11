@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 0939ae6701ad
+Revision ID: 0d0caf7ca3f6
 Revises: 
-Create Date: 2020-07-07 12:51:34.572732
+Create Date: 2020-07-11 11:37:11.432520
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '0939ae6701ad'
+revision = '0d0caf7ca3f6'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -27,14 +27,13 @@ def upgrade():
     sa.Column('cif', sa.String(length=20), nullable=False),
     sa.Column('phone', sa.String(length=20), nullable=False),
     sa.Column('tot_hours', sa.Integer(), nullable=False),
-    sa.Column('is_admin', sa.Boolean(), nullable=False),
+    sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('phone')
     )
     op.create_table('spacetype',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=250), nullable=False),
     sa.Column('description', sa.String(length=250), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
@@ -43,14 +42,16 @@ def upgrade():
     sa.Column('name', sa.String(length=250), nullable=False),
     sa.Column('description', sa.String(length=250), nullable=False),
     sa.Column('logo', sa.String(length=250), nullable=False),
+    sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.Column('enterprise_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['enterprise_id'], ['enterprise.id'], ),
+    sa.ForeignKeyConstraint(['enterprise_id'], ['enterprise.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('space',
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=250), nullable=False),
     sa.Column('spacetype_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['spacetype_id'], ['spacetype.id'], ),
+    sa.ForeignKeyConstraint(['spacetype_id'], ['spacetype.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('equipment',
@@ -59,7 +60,7 @@ def upgrade():
     sa.Column('name', sa.String(length=250), nullable=False),
     sa.Column('description', sa.String(length=250), nullable=False),
     sa.Column('space_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['space_id'], ['space.id'], ),
+    sa.ForeignKeyConstraint(['space_id'], ['space.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('schedule',
@@ -69,8 +70,8 @@ def upgrade():
     sa.Column('hour_end', sa.Integer(), nullable=False),
     sa.Column('enterprise_id', sa.Integer(), nullable=False),
     sa.Column('space_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['enterprise_id'], ['enterprise.id'], ),
-    sa.ForeignKeyConstraint(['space_id'], ['space.id'], ),
+    sa.ForeignKeyConstraint(['enterprise_id'], ['enterprise.id'], onupdate='CASCADE', ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['space_id'], ['space.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

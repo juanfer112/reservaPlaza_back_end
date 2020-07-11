@@ -7,12 +7,13 @@ class Enterprise(db.Model):
     name = db.Column(db.String(80), nullable=False)
     last_name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(80), nullable=False) 
+    password = db.Column(db.String(80), nullable=False)
     cif = db.Column(db.String(20), nullable=False)
     phone = db.Column(db.String(20), unique=True, nullable=False)
     tot_hours = db.Column(db.Integer, nullable=False)
-    brands = db.relationship('Brand', backref='enterprise', lazy=True)
-    schedules = db.relationship('Schedule', backref='enterprise', lazy=True)
+    is_active = db.Column(db.Boolean, default=True)
+    brands = db.relationship('Brand', cascade="all,delete", backref='enterprise', lazy=True)
+    schedules = db.relationship('Schedule', cascade="all,delete", backref='enterprise', lazy=True)
     
     def serialize(self):
         return {
@@ -24,16 +25,18 @@ class Enterprise(db.Model):
             "cif": self.cif,
             "phone": self.phone,
             "tot_hours": self.tot_hours, 
+            "is_active": self.is_active,
             "brands": list(map(lambda x: x.serialize(), self.brands)),
             "schedules": list(map(lambda x: x.serialize(), self.schedules)) 
         }
-        
+
 class Brand(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
     description = db.Column(db.String(250), nullable=False)
     logo = db.Column(db.String(250), nullable=False)
-    enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id'),
+    is_active = db.Column(db.Boolean, default=True)
+    enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id', ondelete='CASCADE', onupdate='CASCADE'),
         nullable=False)
     
     def serialize(self):
@@ -42,6 +45,7 @@ class Brand(db.Model):
             "name": self.name,
             "description": self.description,
             "logo": self.logo,
+            "is_active": self.is_active,
             "enterpriseID": self.enterprise_id
         }
 
@@ -49,7 +53,7 @@ class Brand(db.Model):
 class Spacetype(db.Model):
     id = db.Column(db.Integer, primary_key=True)  
     description = db.Column(db.String(250), nullable=False)
-    spaces = db.relationship('Space', backref='spacetype', lazy=True)
+    spaces = db.relationship('Space', cascade="all,delete", backref='spacetype', lazy=True)
     
     def serialize(self):
         return {
@@ -61,9 +65,9 @@ class Spacetype(db.Model):
 class Space(db.Model):
     id = db.Column(db.Integer, primary_key=True)   
     name = db.Column(db.String(250), nullable=False) 
-    equipments = db.relationship('Equipment', backref='space', lazy=True)
-    schedules = db.relationship('Schedule', backref='space', lazy=True)
-    spacetype_id = db.Column(db.Integer, db.ForeignKey('spacetype.id'),
+    equipments = db.relationship('Equipment', cascade="all,delete", backref='space', lazy=True)
+    schedules = db.relationship('Schedule', cascade="all,delete", backref='space', lazy=True)
+    spacetype_id = db.Column(db.Integer, db.ForeignKey('spacetype.id', ondelete='CASCADE', onupdate='CASCADE'),
         nullable=False)
     
     def serialize(self):
@@ -80,9 +84,9 @@ class Schedule(db.Model):
     date = db.Column(db.Integer, nullable=False)
     hour_start = db.Column(db.Integer, nullable=False)
     hour_end = db.Column(db.Integer, nullable=False)
-    enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id'),
+    enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id', ondelete='CASCADE', onupdate='CASCADE'),
         nullable=False)
-    space_id = db.Column(db.Integer, db.ForeignKey('space.id'), 
+    space_id = db.Column(db.Integer, db.ForeignKey('space.id', ondelete='CASCADE', onupdate='CASCADE'), 
         nullable=False)
     
     def serialize(self):
@@ -100,7 +104,7 @@ class Equipment(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(250), nullable=False)
     description = db.Column(db.String(250), nullable=False)
-    space_id = db.Column(db.Integer, db.ForeignKey('space.id'),
+    space_id = db.Column(db.Integer, db.ForeignKey('space.id', ondelete='CASCADE', onupdate='CASCADE'),
         nullable=False)
     
     def serialize(self):

@@ -3,6 +3,12 @@ from flask_admin import Admin, BaseView, expose
 from models import db, Enterprise, Schedule, Space, Equipment, Spacetype, Brand
 from flask_admin.contrib.sqla import ModelView
 
+class MyView(BaseView):
+    @expose('/')
+    def index(self):
+        import time
+        current_time = time.strftime("%d/%m/%Y")
+        return self.render('index.html', schedule=list(map(lambda x: x.serialize(), Schedule.query.all())), data = current_time)       
 
 class MyModelView(ModelView):
     column_display_pk = True
@@ -36,10 +42,10 @@ class MyModelViewBrands(MyModelView):
         
 def setup_admin(app):
     app.secret_key = os.environ.get('FLASK_APP_KEY', 'sample key')
-    app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
+    app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'    
     admin = Admin(app, name='Admin', template_mode='bootstrap3')
 
-
+    admin.add_view(MyView(name='Hello'))
     admin.add_view(MyModelViewActive(Enterprise, db.session, endpoint='Active_Enterprise', menu_icon_type='glyph', menu_icon_value='glyphicon-user'))
     admin.add_view(MyModelViewBrands(Brand, db.session, menu_icon_type='glyph', menu_icon_value='glyphicon-briefcase'))
     admin.add_view(MyModelView(Schedule, db.session, menu_icon_type='glyph', menu_icon_value='glyphicon-list-alt'))

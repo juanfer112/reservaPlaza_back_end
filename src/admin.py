@@ -20,7 +20,7 @@ class MyModelViewActive(MyModelView):
     def delete_model(self, model):
         try:
             self.on_model_delete(model)            
-            model.is_active = FalseS          
+            model.is_active = False         
             db.session.commit()
         except Exception as ex:
             if not self.handle_view_exception(ex):

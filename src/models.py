@@ -81,20 +81,15 @@ class Space(db.Model):
 
 class Schedule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Integer, nullable=False)
-    hour_start = db.Column(db.Integer, nullable=False)
-    hour_end = db.Column(db.Integer, nullable=False)
-    enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id', ondelete='CASCADE', onupdate='CASCADE'),
-        nullable=False)
-    space_id = db.Column(db.Integer, db.ForeignKey('space.id', ondelete='CASCADE', onupdate='CASCADE'), 
-        nullable=False)
+    date = db.Column(db.DateTime, nullable=False, unique=True,)
+
+    enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
+    space_id = db.Column(db.Integer, db.ForeignKey('space.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     
     def serialize(self):
         return {
             "id": self.id,
             "date": self.date,
-            "hour_start": self.hour_start,
-            "hour_end": self.hour_end,
             "enterpriseID": self.enterprise_id,
             "spaceID": self.space_id
         }

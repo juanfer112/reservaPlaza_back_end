@@ -126,15 +126,16 @@ def handle_schedules():
         return jsonify(schedules), 200
     if request.method == 'POST':
         body = request.get_json()
-        schedule = Schedule(
-            date=body['date'], 
-            hour_start=body['hour_start'],       
-            hour_end=body['hour_end'],
-            enterprise_id=body['enterprise_id'],
-            space_id=body['space_id']
+        if(isinstance(body, list) == False):
+            body = [ body ]
+        for sched in body:
+            schedule = Schedule(
+                date=sched['date'],            
+                enterprise_id=sched['enterprise_id'],
+                space_id=sched['space_id']
             )
-        db.session.add(schedule)
-        db.session.commit()
+            db.session.add(schedule)
+            db.session.commit()
         return "Schedule correctly created", 200
     return "Invalid Method", 404  
 
@@ -150,11 +151,7 @@ def handle_schedule(id):
         if update is None:
             raise APIException('Enterprise not found', status_code=404)
         if "name" in body:
-            update.name = body["name"]
-        if "hour_start" in body:
-            update.hour_start = body["hour_start"]
-        if "hour_end" in body:
-            update.hour_end = body["hour_end"]
+            update.name = body["name"]        
         db.session.commit()
         return "Schedule correctly edited", 200
     return "Invalid Method", 404

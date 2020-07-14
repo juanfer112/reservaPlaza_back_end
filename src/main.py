@@ -129,8 +129,8 @@ def handle_schedules():
         if(isinstance(body, list) == False):
             body = [ body ]
         for sched in body:
-            schedule = Schedule(
-                date=sched['date'],            
+            schedule = Schedule(                
+                date=sched['date'],          
                 enterprise_id=sched['enterprise_id'],
                 space_id=sched['space_id']
             )

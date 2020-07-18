@@ -7,6 +7,7 @@ from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, Enterprise, Schedule, Space, Equipment, Spacetype, Brand
 from create_database import init_database
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -186,6 +187,8 @@ def handle_space(id):
             raise APIException('Space not found', status_code=404)
         if "name" in body:
             update.name = body["name"]
+        if "spacetype_id" in body:
+            update.spacetype_id = body["spacetype_id"]
         db.session.commit()
         return "Space correctly edited", 200
     return "Invalid Method", 404

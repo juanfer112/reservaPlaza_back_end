@@ -130,14 +130,19 @@ def handle_schedules():
         if(isinstance(body, list) == False):
             body = [ body ]
         for sched in body:
-            schedule = Schedule(                
-                date=sched['date'],          
-                enterprise_id=sched['enterprise_id'],
-                space_id=sched['space_id']
-            )
-            db.session.add(schedule)
-            db.session.commit()
-        return "Schedule correctly created", 200
+            if datetime.strptime(sched['date'], '%Y-%m-%d %H:%M:%S') > datetime.now().replace(microsecond=0) + timedelta(hours=2):
+                schedule = Schedule(                
+                    date=sched['date'],          
+                    enterprise_id=sched['enterprise_id'],
+                    space_id=sched['space_id']
+                )
+                print(datetime.strptime(sched['date'], '%Y-%m-%d %H:%M:%S'))
+                print(datetime.now().replace(microsecond=0) + timedelta(hours=2))
+                print(datetime.strptime(sched['date'], '%Y-%m-%d %H:%M:%S') > datetime.now().replace(microsecond=0) + timedelta(hours=2))
+                db.session.add(schedule)
+                db.session.commit()
+                return "Schedule correctly created", 200
+            return "You cannot select past date" 
     return "Invalid Method", 404  
 
 @app.route('/schedules/<int:id>', methods=['GET', 'PUT'])

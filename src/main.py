@@ -105,9 +105,9 @@ def handle_brand(id):
         return jsonify(brand), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Enterprise.query.get(id)
+        update = Brand.query.get(id)
         if update is None:
-            raise APIException('Enterprise not found', status_code=404)
+            raise APIException('Brand not found', status_code=404)
         if "name" in body:
             update.name = body["name"]
         if "description" in body:
@@ -147,7 +147,7 @@ def handle_schedule(id):
         return jsonify(schedule), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Enterprise.query.get(id)
+        update = Schedule.query.get(id)
         if update is None:
             raise APIException('Enterprise not found', status_code=404)
         if "name" in body:
@@ -181,9 +181,9 @@ def handle_space(id):
         return jsonify(space), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Enterprise.query.get(id)
+        update = Space.query.get(id)
         if update is None:
-            raise APIException('Enterprise not found', status_code=404)
+            raise APIException('Space not found', status_code=404)
         if "name" in body:
             update.name = body["name"]
         db.session.commit()
@@ -214,9 +214,9 @@ def handle_spacetype(id):
         return jsonify(spacetype), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Enterprise.query.get(id)
+        update = Spacetype.query.get(id)
         if update is None:
-            raise APIException('Enterprise not found', status_code=404)
+            raise APIException('Spacetype not found', status_code=404)
         if "description" in body:
             update.description = body["description"]
         db.session.commit()
@@ -250,9 +250,9 @@ def handle_equipment(id):
         return jsonify(equipments), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Enterprise.query.get(id)
+        update = Equipment.query.get(id)
         if update is None:
-            raise APIException('Enterprise not found', status_code=404)
+            raise APIException('Equipment not found', status_code=404)
         if "description" in body:
             update.description = body["description"]
         if "name" in body:

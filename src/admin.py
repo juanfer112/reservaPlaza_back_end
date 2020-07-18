@@ -45,11 +45,10 @@ def setup_admin(app):
     app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'    
     admin = Admin(app, name='Admin', template_mode='bootstrap3')
 
-    admin.add_view(MyView(name='Hello'))
-    admin.add_view(MyModelViewActive(Enterprise, db.session, endpoint='Active_Enterprise', menu_icon_type='glyph', menu_icon_value='glyphicon-user'))
-    admin.add_view(MyModelViewBrands(Brand, db.session, menu_icon_type='glyph', menu_icon_value='glyphicon-briefcase'))
-    admin.add_view(MyModelView(Schedule, db.session, menu_icon_type='glyph', menu_icon_value='glyphicon-list-alt'))
-    admin.add_view(MyModelView(Equipment, db.session, menu_icon_type='glyph', menu_icon_value='glyphicon-wrench'))
-    admin.add_view(MyModelView(Space, db.session))       
-    admin.add_view(MyModelView(Spacetype, db.session))    
-    admin.add_view(MyModelViewNotActive(Enterprise, db.session, "Inactive Enterprise", endpoint='Enterprise_not_active', menu_icon_type='glyph', menu_icon_value='glyphicon-alert'))
+    admin.add_view(MyModelViewActive(Enterprise, db.session, endpoint='enterprises', menu_icon_type='glyph', menu_icon_value='glyphicon-user'))
+    admin.add_view(MyModelViewBrands(Brand, db.session, endpoint='brands', menu_icon_type='glyph', menu_icon_value='glyphicon-briefcase'))
+    admin.add_view(MyModelView(Schedule, db.session, endpoint='schedules', menu_icon_type='glyph', menu_icon_value='glyphicon-list-alt'))
+    admin.add_view(MyModelView(Equipment, db.session, endpoint='equipments', menu_icon_type='glyph', menu_icon_value='glyphicon-wrench'))
+    admin.add_view(MyModelView(Space, db.session, endpoint='spaces'))       
+    admin.add_view(MyModelView(Spacetype, db.session, endpoint='spacetypes', ))    
+    admin.add_view(MyModelViewNotActive(Enterprise, db.session, "Inactive Enterprise", endpoint='inactive-enterprises', menu_icon_type='glyph', menu_icon_value='glyphicon-alert'))

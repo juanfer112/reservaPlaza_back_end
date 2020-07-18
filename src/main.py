@@ -49,7 +49,7 @@ def handle_enterprises():
         return "Enterprise correctly created", 200
     return "Invalid Method", 404
 
-@app.route('/enterprise/<int:id>', methods=['GET', 'PUT'])
+@app.route('/enterprises/<int:id>', methods=['GET', 'PUT'])
 def handle_enterprise(id):
     if request.method == 'GET':
         enterprise = Enterprise.query.get(id)
@@ -97,7 +97,7 @@ def handle_brands():
         return "Brand correctly created", 200
     return "Invalid Method", 404
 
-@app.route('/brand/<int:id>', methods=['GET', 'PUT'])
+@app.route('/brands/<int:id>', methods=['GET', 'PUT'])
 def handle_brand(id):
     if request.method == 'GET':
         brand = Brand.query.get(id)
@@ -139,7 +139,7 @@ def handle_schedules():
         return "Schedule correctly created", 200
     return "Invalid Method", 404  
 
-@app.route('/schedule/<int:id>', methods=['GET', 'PUT'])
+@app.route('/schedules/<int:id>', methods=['GET', 'PUT'])
 def handle_schedule(id):
     if request.method == 'GET':
         schedule = Schedule.query.get(id)
@@ -173,7 +173,7 @@ def handle_spaces():
         return "Space correctly created", 200
     return "Invalid Method", 404 
 
-@app.route('/space/<int:id>', methods=['GET', 'PUT'])
+@app.route('/spaces/<int:id>', methods=['GET', 'PUT'])
 def handle_space(id):
     if request.method == 'GET':
         space = Space.query.get(id)
@@ -206,7 +206,7 @@ def handle_spacetypes():
         return "Spacetype correctly created", 200
     return "Invalid Method", 404 
 
-@app.route('/spacetype/<int:id>', methods=['GET', 'PUT'])
+@app.route('/spacetypes/<int:id>', methods=['GET', 'PUT'])
 def handle_spacetype(id):
     if request.method == 'GET':
         spacetype = Spacetype.query.get(id)
@@ -242,7 +242,7 @@ def handle_equipments():
         return "Equipments correctly created", 200
     return "Invalid Method", 404
 
-@app.route('/equipment/<int:id>', methods=['GET', 'PUT'])
+@app.route('/equipments/<int:id>', methods=['GET', 'PUT'])
 def handle_equipment(id):
     if request.method == 'GET':
         equipments = Equipments.query.get(id)

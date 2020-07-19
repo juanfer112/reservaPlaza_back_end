@@ -10,9 +10,8 @@ class Mix():
         return model
 
     @classmethod
-    def getById(cls):
-        model = cls.query.all()
-        model = list(map(lambda x: x.serialize(), model))
+    def getById(cls, id):
+        model = cls.query.get(id)
         return model
 
     @classmethod
@@ -21,7 +20,14 @@ class Mix():
         for attribute in body:
             setattr(model, attribute, body[attribute])
         return model
-     
+
+    def updateModel(self, body):        
+        for attribute in body:
+            if hasattr(self, attribute):
+                setattr(self, attribute, body[attribute])
+                db.session.commit()                
+        return self
+
     def addCommit(self):
         db.session.add(self)
         self.store()
@@ -75,7 +81,6 @@ class Brand(db.Model, Mix):
             "is_active": self.is_active,
             "enterpriseID": self.enterprise_id
         }
-
 
 class Spacetype(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)  

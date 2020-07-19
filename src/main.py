@@ -44,30 +44,13 @@ def handle_enterprises():
 
 @app.route('/enterprises/<int:id>', methods=['GET', 'PUT'])
 def handle_enterprise(id):
+    enterprise = Enterprise.getById(id)
     if request.method == 'GET':
-        enterprise = Enterprise.query.get(id)
         return toJson(enterprise), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Enterprise.query.get(id)
-        if update is None:
-            raise APIException('Enterprise not found', status_code=404)
-        if "name" in body:
-            update.name = body["name"]
-        if "last_name" in body:
-            update.last_name = body["last_name"]
-        if "email" in body:
-            update.email = body["email"]
-        if "password" in body:
-            update.password = body["password"]
-        if "cif" in body:
-            update.cif = body["cif"]
-        if "phone" in body:
-            update.phone = body["phone"]
-        if "tot_hours" in body:
-            update.tot_hours = body["tot_hours"]
-        db.session.commit()
-        return "Enterprise correctly edited", 200
+        updatedEnterprise = enterprise.updateModel(body)
+        return toJson(updatedEnterprise), 200
 
 @app.route('/brands', methods=['GET', 'POST'])
 def handle_brands():
@@ -81,22 +64,13 @@ def handle_brands():
 
 @app.route('/brands/<int:id>', methods=['GET', 'PUT'])
 def handle_brand(id):
-    if request.method == 'GET':
-        brand = Brand.query.get(id)
+    brand = Brand.query.get(id)
+    if request.method == 'GET':        
         return toJson(brand), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Brand.query.get(id)
-        if update is None:
-            raise APIException('Brand not found', status_code=404)
-        if "name" in body:
-            update.name = body["name"]
-        if "description" in body:
-            update.description = body["description"]
-        if "logo" in body:
-            update.logo = body["logo"]      
-        db.session.commit()
-        return "Brand correctly edited", 200
+        updatedBrand = brand.updateModel(body)
+        return toJson(updatedBrand), 200
 
 @app.route('/schedules', methods=['GET', 'POST'])
 def handle_schedules():
@@ -117,18 +91,13 @@ def handle_schedules():
 
 @app.route('/schedules/<int:id>', methods=['GET', 'PUT'])
 def handle_schedule(id):
-    if request.method == 'GET':
-        schedule = Schedule.query.get(id)
+    schedule = Schedule.query.get(id)
+    if request.method == 'GET':       
         return toJson(schedule), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Schedule.query.get(id)
-        if update is None:
-            raise APIException('Enterprise not found', status_code=404)
-        if "name" in body:
-            update.name = body["name"]        
-        db.session.commit()
-        return "Schedule correctly edited", 200
+        updatedSchedule = schedule.updateModel(body)
+        return toJson(updatedSchedule), 200
 
 @app.route('/spaces', methods=['GET', 'POST'])
 def handle_spaces():
@@ -142,20 +111,13 @@ def handle_spaces():
 
 @app.route('/spaces/<int:id>', methods=['GET', 'PUT'])
 def handle_space(id):
-    if request.method == 'GET':
-        space = Space.query.get(id)
+    space = Space.query.get(id)
+    if request.method == 'GET':        
         return toJson(space), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Space.query.get(id)
-        if update is None:
-            raise APIException('Space not found', status_code=404)
-        if "name" in body:
-            update.name = body["name"]
-        if "spacetype_id" in body:
-            update.spacetype_id = body["spacetype_id"]
-        db.session.commit()
-        return "Space correctly edited", 200
+        updatedSpace = space.updateModel(body)
+        return toJson(updatedSpace), 200
 
 @app.route('/spacetypes', methods=['GET', 'POST'])
 def handle_spacetypes():
@@ -169,18 +131,14 @@ def handle_spacetypes():
 
 @app.route('/spacetypes/<int:id>', methods=['GET', 'PUT'])
 def handle_spacetype(id):
+    spacetype = Spacetype.query.get(id)
     if request.method == 'GET':
-        spacetype = Spacetype.query.get(id)
         return toJson(spacetype), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Spacetype.query.get(id)
-        if update is None:
-            raise APIException('Spacetype not found', status_code=404)
-        if "description" in body:
-            update.description = body["description"]
-        db.session.commit()
-        return "Spacetype correctly edited", 200
+        updatedSpacetype = spacetype.updateModel(body)
+        return toJson(updatedSpacetype), 200
+
 
 @app.route('/equipments', methods=['GET', 'POST'])
 def handle_equipments():
@@ -194,22 +152,13 @@ def handle_equipments():
 
 @app.route('/equipments/<int:id>', methods=['GET', 'PUT'])
 def handle_equipment(id):
-    if request.method == 'GET':
-        equipment = Equipment.query.get(id)
+    equipment = Equipment.query.get(id)
+    if request.method == 'GET':        
         return toJson(equipment), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Equipment.query.get(id)
-        if update is None:
-            raise APIException('Equipment not found', status_code=404)
-        if "description" in body:
-            update.description = body["description"]
-        if "name" in body:
-            update.name = body["name"]
-        if "quantity" in body:
-            update.quantity = body["quantity"]
-        db.session.commit()
-        return "Equipments correctly edited", 200
+        updatedEquipment = equipment.updateModel(body)
+        return toJson(updatedEquipment), 200
 
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))

@@ -29,20 +29,24 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+def toJson(model):
+    return jsonify(model.serialize())
+
 @app.route('/enterprises', methods=['GET', 'POST'])
 def handle_enterprises():
     if request.method == 'GET':
         return jsonify(Enterprise.getAll()), 200 
     if request.method == 'POST':
-        body = request.get_json()               
-        Enterprise.addCommit(Enterprise.newInstance(body))
-        return "Enterprise correctly created", 200
+        body = request.get_json()       
+        newEnterprise = Enterprise.newInstance(body)        
+        newEnterprise.addCommit()
+        return toJson(newEnterprise), 201
 
 @app.route('/enterprises/<int:id>', methods=['GET', 'PUT'])
 def handle_enterprise(id):
     if request.method == 'GET':
         enterprise = Enterprise.query.get(id)
-        return jsonify(enterprise.serialize()), 200
+        return toJson(enterprise), 200
     if request.method == 'PUT':
         body = request.get_json()
         update = Enterprise.query.get(id)
@@ -71,14 +75,15 @@ def handle_brands():
         return jsonify(Brand.getAll()), 200 
     if request.method == 'POST':
         body = request.get_json()
-        Brand.addCommit(Brand.newInstance(body))
-        return "Brand correctly created", 200
+        newBrand = Brand.newInstance(body)        
+        newBrand.addCommit()
+        return toJson(newBrand), 201
 
 @app.route('/brands/<int:id>', methods=['GET', 'PUT'])
 def handle_brand(id):
     if request.method == 'GET':
         brand = Brand.query.get(id)
-        return jsonify(brand.serialize()), 200
+        return toJson(brand), 200
     if request.method == 'PUT':
         body = request.get_json()
         update = Brand.query.get(id)
@@ -101,19 +106,20 @@ def handle_schedules():
         body = request.get_json()
         schedulesToAdd = []
         for obj in body:
-            schedule = Schedule.newInstance(obj)
+            schedule = Schedule.newInstance(obj)    
             if ConvertDate.stringToDate(schedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
                 schedulesToAdd.append(schedule)
         if len(schedulesToAdd) == len(body):
             db.session.bulk_save_objects(schedulesToAdd)
             db.session.commit()
-            return "Schedules correctly edited", 200            
+            return jsonify(list(map(lambda x: x.serialize(), schedulesToAdd))), 201
+        return {"Message" : "One or more dates are not selectable"}, 422         
 
 @app.route('/schedules/<int:id>', methods=['GET', 'PUT'])
 def handle_schedule(id):
     if request.method == 'GET':
         schedule = Schedule.query.get(id)
-        return jsonify(schedule.serialize()), 200
+        return toJson(schedule), 200
     if request.method == 'PUT':
         body = request.get_json()
         update = Schedule.query.get(id)
@@ -130,14 +136,15 @@ def handle_spaces():
         return jsonify(Space.getAll()), 200
     if request.method == 'POST':
         body = request.get_json()
-        Space.addCommit(Space.newInstance(body))
-        return "Space correctly created", 200 
+        newSpace = Space.newInstance(body)
+        newSpace.addCommit()
+        return toJson(newSpace), 201
 
 @app.route('/spaces/<int:id>', methods=['GET', 'PUT'])
 def handle_space(id):
     if request.method == 'GET':
         space = Space.query.get(id)
-        return jsonify(space.serialize()), 200
+        return toJson(space), 200
     if request.method == 'PUT':
         body = request.get_json()
         update = Space.query.get(id)
@@ -156,14 +163,15 @@ def handle_spacetypes():
         return jsonify(Spacetype.getAll()), 200
     if request.method == 'POST':
         body = request.get_json()
-        Spacetype.addCommit(Spacetype.newInstance(body))
-        return "Spacetype correctly created", 200 
+        newSpacetype = Spacetype.newInstance(body)
+        newSpacetype.addCommit()
+        return toJson(newSpacetype), 201
 
 @app.route('/spacetypes/<int:id>', methods=['GET', 'PUT'])
 def handle_spacetype(id):
     if request.method == 'GET':
         spacetype = Spacetype.query.get(id)
-        return jsonify(spacetype.serialize()), 200
+        return toJson(spacetype), 200
     if request.method == 'PUT':
         body = request.get_json()
         update = Spacetype.query.get(id)
@@ -180,14 +188,15 @@ def handle_equipments():
         return jsonify(Equipment.getAll()), 200
     if request.method == 'POST':
         body = request.get_json()
-        Equipment.addCommit(Equipment.newInstance(body))
-        return "Equipments correctly created", 200
+        newEquipment = Equipment.newInstance(body)
+        newEquipment.addCommit()
+        return toJson(newEquipment), 201
 
 @app.route('/equipments/<int:id>', methods=['GET', 'PUT'])
 def handle_equipment(id):
     if request.method == 'GET':
         equipment = Equipment.query.get(id)
-        return jsonify(equipment.serialize()), 200
+        return toJson(equipment), 200
     if request.method == 'PUT':
         body = request.get_json()
         update = Equipment.query.get(id)

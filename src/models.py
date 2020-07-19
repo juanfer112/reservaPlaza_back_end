@@ -10,6 +10,12 @@ class Mix():
         return model
 
     @classmethod
+    def getById(cls):
+        model = cls.query.all()
+        model = list(map(lambda x: x.serialize(), model))
+        return model
+
+    @classmethod
     def newInstance(cls, body):
         model = cls()               
         for attribute in body:

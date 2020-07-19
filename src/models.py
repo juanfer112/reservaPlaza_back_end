@@ -3,14 +3,26 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 class Mix():
-    
+    @classmethod
+    def getAll(cls):
+        model = cls.query.all()
+        model = list(map(lambda x: x.serialize(), model))
+        return model
+
+    @classmethod
+    def newInstance(cls, body):
+        model = cls()               
+        for attribute in body:
+            setattr(model, attribute, body[attribute])
+        return model
+     
     def addCommit(self):
         db.session.add(self)
         self.store()
 
     def store(self):
-        db.session.commit()
-
+        db.session.commit()   
+        
 class Enterprise(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
@@ -90,8 +102,7 @@ class Space(db.Model, Mix):
 
 class Schedule(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, nullable=False, unique=True,)
-
+    date = db.Column(db.DateTime, nullable=False, unique=True)
     enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     space_id = db.Column(db.Integer, db.ForeignKey('space.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     

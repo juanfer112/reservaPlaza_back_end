@@ -2,7 +2,16 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-class Enterprise(db.Model):
+class Mix():
+    
+    def addCommit(self):
+        db.session.add(self)
+        self.store()
+
+    def store(self):
+        db.session.commit()
+
+class Enterprise(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     last_name = db.Column(db.String(80), nullable=False)
@@ -30,7 +39,7 @@ class Enterprise(db.Model):
             "schedules": list(map(lambda x: x.serialize(), self.schedules)) 
         }
 
-class Brand(db.Model):
+class Brand(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
     description = db.Column(db.String(250), nullable=False)
@@ -50,7 +59,7 @@ class Brand(db.Model):
         }
 
 
-class Spacetype(db.Model):
+class Spacetype(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)  
     description = db.Column(db.String(250), nullable=False)
     spaces = db.relationship('Space', cascade="all,delete", backref='spacetype', lazy=True)
@@ -62,7 +71,7 @@ class Spacetype(db.Model):
             "spaces": list(map(lambda x: x.serialize(), self.spaces))
         }
 
-class Space(db.Model):
+class Space(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)   
     name = db.Column(db.String(250), nullable=False) 
     equipments = db.relationship('Equipment', cascade="all,delete", backref='space', lazy=True)
@@ -79,7 +88,7 @@ class Space(db.Model):
             "schedules": list(map(lambda x: x.serialize(), self.schedules))
         }
 
-class Schedule(db.Model):
+class Schedule(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.DateTime, nullable=False, unique=True,)
 
@@ -94,7 +103,7 @@ class Schedule(db.Model):
             "spaceID": self.space_id
         }
 
-class Equipment(db.Model):
+class Equipment(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(250), nullable=False)

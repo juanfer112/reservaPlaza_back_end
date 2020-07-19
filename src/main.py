@@ -8,6 +8,7 @@ from admin import setup_admin
 from models import db, Enterprise, Schedule, Space, Equipment, Spacetype, Brand
 from create_database import init_database
 from datetime import datetime, timedelta
+from date_convert import ConvertDate
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -50,12 +51,11 @@ def handle_enterprises():
         return "Enterprise correctly created", 200
     return "Invalid Method", 404
 
-@app.route('/enterprises/<int:id>', methods=['GET', 'PUT'])
+@app.route('/enterprise/<int:id>', methods=['GET', 'PUT'])
 def handle_enterprise(id):
     if request.method == 'GET':
         enterprise = Enterprise.query.get(id)
-        enterprise = list(map(lambda x: x.serialize(), enterprise))
-        return jsonify(enterprise), 200
+        return jsonify(enterprise.serialize()), 200
     if request.method == 'PUT':
         body = request.get_json()
         update = Enterprise.query.get(id)
@@ -102,8 +102,7 @@ def handle_brands():
 def handle_brand(id):
     if request.method == 'GET':
         brand = Brand.query.get(id)
-        brand = list(map(lambda x: x.serialize(), brand))
-        return jsonify(brand), 200
+        return jsonify(brand.serialize()), 200
     if request.method == 'PUT':
         body = request.get_json()
         update = Brand.query.get(id)
@@ -130,24 +129,22 @@ def handle_schedules():
         if(isinstance(body, list) == False):
             body = [ body ]
         for sched in body:
-            if datetime.strptime(sched['date'], '%Y-%m-%d %H:%M:%S') > datetime.now().replace(microsecond=0) + timedelta(hours=2):
+            if ConvertDate.stringToDate(sched['date']) > ConvertDate.fixedTimeZoneCurrentTime():
                 schedule = Schedule(                
                     date=sched['date'],          
                     enterprise_id=sched['enterprise_id'],
                     space_id=sched['space_id']
                 )
-                db.session.add(schedule)
-                db.session.commit()
+                Schedule.addCommit(schedule)
                 return "Schedule correctly created", 200
-            return "You cannot select past date" 
+            return "You cannot select past date", 400
     return "Invalid Method", 404  
 
 @app.route('/schedules/<int:id>', methods=['GET', 'PUT'])
 def handle_schedule(id):
     if request.method == 'GET':
         schedule = Schedule.query.get(id)
-        schedule = list(map(lambda x: x.serialize(), schedule))
-        return jsonify(schedule), 200
+        return jsonify(schedule.serialize()), 200
     if request.method == 'PUT':
         body = request.get_json()
         update = Schedule.query.get(id)
@@ -180,8 +177,7 @@ def handle_spaces():
 def handle_space(id):
     if request.method == 'GET':
         space = Space.query.get(id)
-        space = list(map(lambda x: x.serialize(), space))
-        return jsonify(space), 200
+        return jsonify(space.serialize()), 200
     if request.method == 'PUT':
         body = request.get_json()
         update = Space.query.get(id)
@@ -215,8 +211,7 @@ def handle_spacetypes():
 def handle_spacetype(id):
     if request.method == 'GET':
         spacetype = Spacetype.query.get(id)
-        spacetype = list(map(lambda x: x.serialize(), spacetype))
-        return jsonify(spacetype), 200
+        return jsonify(spacetype.serialize()), 200
     if request.method == 'PUT':
         body = request.get_json()
         update = Spacetype.query.get(id)
@@ -250,9 +245,8 @@ def handle_equipments():
 @app.route('/equipments/<int:id>', methods=['GET', 'PUT'])
 def handle_equipment(id):
     if request.method == 'GET':
-        equipments = Equipments.query.get(id)
-        equipments = list(map(lambda x: x.serialize(), equipments))
-        return jsonify(equipments), 200
+        equipments = Equipment.query.get(id)
+        return jsonify(equipments.serialize()), 200
     if request.method == 'PUT':
         body = request.get_json()
         update = Equipment.query.get(id)

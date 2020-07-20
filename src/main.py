@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask, request, jsonify
 from flask_migrate import Migrate
 from flask_swagger import swagger
@@ -32,10 +33,14 @@ def sitemap():
 def toJson(model):
     return jsonify(model.serialize())
 
+def addCommitArray(self):
+    db.session.bulk_save_objects(self)
+    db.session.commit()
+
 @app.route('/enterprises', methods=['GET', 'POST'])
 def handle_enterprises():
     if request.method == 'GET':
-        return jsonify(Enterprise.getAll()), 200 
+        return jsonify(Enterprise.getAllSerialized()), 200 
     if request.method == 'POST':
         body = request.get_json()       
         newEnterprise = Enterprise.newInstance(body)        
@@ -55,7 +60,7 @@ def handle_enterprise(id):
 @app.route('/brands', methods=['GET', 'POST'])
 def handle_brands():
     if request.method == 'GET':
-        return jsonify(Brand.getAll()), 200 
+        return jsonify(Brand.getAllSerialized()), 200 
     if request.method == 'POST':
         body = request.get_json()
         newBrand = Brand.newInstance(body)        
@@ -75,19 +80,18 @@ def handle_brand(id):
 @app.route('/schedules', methods=['GET', 'POST'])
 def handle_schedules():
     if request.method == 'GET':
-        return jsonify(Schedule.getAll()), 200
+        return jsonify(Schedule.getAllSerialized()), 200
     if request.method == 'POST':
         body = request.get_json()
         schedulesToAdd = []
-        for obj in body:
-            schedule = Schedule.newInstance(obj)    
-            if ConvertDate.stringToDate(schedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
-                schedulesToAdd.append(schedule)
+        for schedule in body:
+            newSchedule = Schedule.newInstance(schedule)    
+            if ConvertDate.stringToDate(newSchedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
+                schedulesToAdd.append(newSchedule)
         if len(schedulesToAdd) == len(body):
-            db.session.bulk_save_objects(schedulesToAdd)
-            db.session.commit()
+            addCommitArray(schedulesToAdd)
             return jsonify(list(map(lambda x: x.serialize(), schedulesToAdd))), 201
-        return {"Message" : "One or more dates are not selectable"}, 422         
+        return json.dumps({"Message" : "One or more dates are not selectable"}), 422         
 
 @app.route('/schedules/<int:id>', methods=['GET', 'PUT'])
 def handle_schedule(id):
@@ -102,7 +106,7 @@ def handle_schedule(id):
 @app.route('/spaces', methods=['GET', 'POST'])
 def handle_spaces():
     if request.method == 'GET':
-        return jsonify(Space.getAll()), 200
+        return jsonify(Space.getAllSerialized()), 200
     if request.method == 'POST':
         body = request.get_json()
         newSpace = Space.newInstance(body)
@@ -122,7 +126,7 @@ def handle_space(id):
 @app.route('/spacetypes', methods=['GET', 'POST'])
 def handle_spacetypes():
     if request.method == 'GET':
-        return jsonify(Spacetype.getAll()), 200
+        return jsonify(Spacetype.getAllSerialized()), 200
     if request.method == 'POST':
         body = request.get_json()
         newSpacetype = Spacetype.newInstance(body)
@@ -143,7 +147,7 @@ def handle_spacetype(id):
 @app.route('/equipments', methods=['GET', 'POST'])
 def handle_equipments():
     if request.method == 'GET':
-        return jsonify(Equipment.getAll()), 200
+        return jsonify(Equipment.getAllSerialized()), 200
     if request.method == 'POST':
         body = request.get_json()
         newEquipment = Equipment.newInstance(body)

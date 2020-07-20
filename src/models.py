@@ -4,10 +4,10 @@ db = SQLAlchemy()
 
 class Mix():
     @classmethod
-    def getAll(cls):
-        model = cls.query.all()
-        model = list(map(lambda x: x.serialize(), model))
-        return model
+    def getAllSerialized(cls):
+        models = cls.query.all()
+        models = list(map(lambda x: x.serialize(), models))
+        return models
 
     @classmethod
     def getById(cls, id):

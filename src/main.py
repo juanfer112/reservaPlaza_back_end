@@ -33,8 +33,8 @@ def sitemap():
 def toJson(model):
     return jsonify(model.serialize())
 
-def addCommitArray(self):
-    db.session.bulk_save_objects(self)
+def addCommitArray(arrayToSave):
+    db.session.bulk_save_objects(arrayToSave)
     db.session.commit()
 
 @app.route('/enterprises', methods=['GET', 'POST'])

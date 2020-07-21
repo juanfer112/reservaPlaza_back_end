@@ -3,14 +3,38 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 class Mix():
-    
+    @classmethod
+    def getAllSerialized(cls):
+        models = cls.query.all()
+        models = list(map(lambda x: x.serialize(), models))
+        return models
+
+    @classmethod
+    def getById(cls, id):
+        model = cls.query.get(id)
+        return model
+
+    @classmethod
+    def newInstance(cls, body):
+        model = cls()               
+        for attribute in body:
+            setattr(model, attribute, body[attribute])
+        return model
+
+    def updateModel(self, body):        
+        for attribute in body:
+            if hasattr(self, attribute):
+                setattr(self, attribute, body[attribute])
+                db.session.commit()                
+        return self
+
     def addCommit(self):
         db.session.add(self)
         self.store()
 
     def store(self):
-        db.session.commit()
-
+        db.session.commit()   
+        
 class Enterprise(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
@@ -58,7 +82,6 @@ class Brand(db.Model, Mix):
             "enterpriseID": self.enterprise_id
         }
 
-
 class Spacetype(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)  
     description = db.Column(db.String(250), nullable=False)
@@ -90,8 +113,7 @@ class Space(db.Model, Mix):
 
 class Schedule(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, nullable=False, unique=True,)
-
+    date = db.Column(db.DateTime, nullable=False, unique=True)
     enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     space_id = db.Column(db.Integer, db.ForeignKey('space.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     

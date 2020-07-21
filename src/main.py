@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask, request, jsonify
 from flask_migrate import Migrate
 from flask_swagger import swagger
@@ -29,238 +30,139 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+def toJson(model):
+    return jsonify(model.serialize())
+
+def addCommitArray(arrayToSave):
+    db.session.bulk_save_objects(arrayToSave)
+    db.session.commit()
+
 @app.route('/enterprises', methods=['GET', 'POST'])
 def handle_enterprises():
     if request.method == 'GET':
-        enterprises = Enterprise.query.all()
-        enterprises = list(map(lambda x: x.serialize(), enterprises))
-        return jsonify(enterprises), 200    
+        return jsonify(Enterprise.getAllSerialized()), 200 
     if request.method == 'POST':
-        body = request.get_json()
-        enterprise = Enterprise(
-            name=body['name'], 
-            last_name=body['last_name'], 
-            email=body['email'], 
-            password=body['password'], 
-            cif=body['cif'], 
-            phone=body['phone'], 
-            tot_hours=body['tot_hours']
-            )
-        db.session.add(enterprise)
-        db.session.commit()
-        return "Enterprise correctly created", 200
-    return "Invalid Method", 404
+        body = request.get_json()       
+        newEnterprise = Enterprise.newInstance(body)        
+        newEnterprise.addCommit()
+        return toJson(newEnterprise), 201
 
-@app.route('/enterprise/<int:id>', methods=['GET', 'PUT'])
+@app.route('/enterprises/<int:id>', methods=['GET', 'PUT'])
 def handle_enterprise(id):
+    enterprise = Enterprise.getById(id)
     if request.method == 'GET':
-        enterprise = Enterprise.query.get(id)
-        return jsonify(enterprise.serialize()), 200
+        return toJson(enterprise), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Enterprise.query.get(id)
-        if update is None:
-            raise APIException('Enterprise not found', status_code=404)
-        if "name" in body:
-            update.name = body["name"]
-        if "last_name" in body:
-            update.last_name = body["last_name"]
-        if "email" in body:
-            update.email = body["email"]
-        if "password" in body:
-            update.password = body["password"]
-        if "cif" in body:
-            update.cif = body["cif"]
-        if "phone" in body:
-            update.phone = body["phone"]
-        if "tot_hours" in body:
-            update.tot_hours = body["tot_hours"]
-        db.session.commit()
-        return "Enterprise correctly edited", 200
-    return "Invalid Method", 404
+        updatedEnterprise = enterprise.updateModel(body)
+        return toJson(updatedEnterprise), 200
 
 @app.route('/brands', methods=['GET', 'POST'])
 def handle_brands():
     if request.method == 'GET':
-        brands = Brand.query.all()
-        brands = list(map(lambda x: x.serialize(), brands))
-        return jsonify(brands), 200 
+        return jsonify(Brand.getAllSerialized()), 200 
     if request.method == 'POST':
         body = request.get_json()
-        brand = Brand(
-            name=body['name'], 
-            description=body['description'],    
-            logo=body['logo'],
-            enterprise_id=body['enterprise_id']
-            )
-        db.session.add(brand)
-        db.session.commit()
-        return "Brand correctly created", 200
-    return "Invalid Method", 404
+        newBrand = Brand.newInstance(body)        
+        newBrand.addCommit()
+        return toJson(newBrand), 201
 
 @app.route('/brands/<int:id>', methods=['GET', 'PUT'])
 def handle_brand(id):
-    if request.method == 'GET':
-        brand = Brand.query.get(id)
-        return jsonify(brand.serialize()), 200
+    brand = Brand.query.get(id)
+    if request.method == 'GET':        
+        return toJson(brand), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Brand.query.get(id)
-        if update is None:
-            raise APIException('Brand not found', status_code=404)
-        if "name" in body:
-            update.name = body["name"]
-        if "description" in body:
-            update.description = body["description"]
-        if "logo" in body:
-            update.logo = body["logo"]      
-        db.session.commit()
-        return "Brand correctly edited", 200
-    return "Invalid Method", 404
+        updatedBrand = brand.updateModel(body)
+        return toJson(updatedBrand), 200
 
 @app.route('/schedules', methods=['GET', 'POST'])
 def handle_schedules():
     if request.method == 'GET':
-        schedules = Schedule.query.all()
-        schedules = list(map(lambda x: x.serialize(), schedules))
-        return jsonify(schedules), 200
+        return jsonify(Schedule.getAllSerialized()), 200
     if request.method == 'POST':
         body = request.get_json()
-        if(isinstance(body, list) == False):
-            body = [ body ]
-        for sched in body:
-            if ConvertDate.stringToDate(sched['date']) > ConvertDate.fixedTimeZoneCurrentTime():
-                schedule = Schedule(                
-                    date=sched['date'],          
-                    enterprise_id=sched['enterprise_id'],
-                    space_id=sched['space_id']
-                )
-                Schedule.addCommit(schedule)
-                return "Schedule correctly created", 200
-            return "You cannot select past date", 400
-    return "Invalid Method", 404  
+        schedulesToAdd = []
+        for schedule in body:
+            newSchedule = Schedule.newInstance(schedule)    
+            if ConvertDate.stringToDate(newSchedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
+                schedulesToAdd.append(newSchedule)
+        if len(schedulesToAdd) == len(body):
+            addCommitArray(schedulesToAdd)
+            return jsonify(list(map(lambda x: x.serialize(), schedulesToAdd))), 201
+        return json.dumps({"Message" : "One or more dates are not selectable"}), 422         
 
 @app.route('/schedules/<int:id>', methods=['GET', 'PUT'])
 def handle_schedule(id):
-    if request.method == 'GET':
-        schedule = Schedule.query.get(id)
-        return jsonify(schedule.serialize()), 200
+    schedule = Schedule.query.get(id)
+    if request.method == 'GET':       
+        return toJson(schedule), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Schedule.query.get(id)
-        if update is None:
-            raise APIException('Enterprise not found', status_code=404)
-        if "name" in body:
-            update.name = body["name"]        
-        db.session.commit()
-        return "Schedule correctly edited", 200
-    return "Invalid Method", 404
+        updatedSchedule = schedule.updateModel(body)
+        return toJson(updatedSchedule), 200
 
 @app.route('/spaces', methods=['GET', 'POST'])
 def handle_spaces():
     if request.method == 'GET':
-        schedules = Space.query.all()
-        schedules = list(map(lambda x: x.serialize(), schedules))
-        return jsonify(schedules), 200
+        return jsonify(Space.getAllSerialized()), 200
     if request.method == 'POST':
         body = request.get_json()
-        space = Space(
-            name=body['name'],
-            spacetype_id=body['spacetype_id']
-            )
-        db.session.add(space)
-        db.session.commit()
-        return "Space correctly created", 200
-    return "Invalid Method", 404 
+        newSpace = Space.newInstance(body)
+        newSpace.addCommit()
+        return toJson(newSpace), 201
 
 @app.route('/spaces/<int:id>', methods=['GET', 'PUT'])
 def handle_space(id):
-    if request.method == 'GET':
-        space = Space.query.get(id)
-        return jsonify(space.serialize()), 200
+    space = Space.query.get(id)
+    if request.method == 'GET':        
+        return toJson(space), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Space.query.get(id)
-        if update is None:
-            raise APIException('Space not found', status_code=404)
-        if "name" in body:
-            update.name = body["name"]
-        if "spacetype_id" in body:
-            update.spacetype_id = body["spacetype_id"]
-        db.session.commit()
-        return "Space correctly edited", 200
-    return "Invalid Method", 404
+        updatedSpace = space.updateModel(body)
+        return toJson(updatedSpace), 200
 
 @app.route('/spacetypes', methods=['GET', 'POST'])
 def handle_spacetypes():
     if request.method == 'GET':
-        spacetype = Spacetype.query.all()
-        spacetype = list(map(lambda x: x.serialize(), spacetype))
-        return jsonify(spacetype), 200
+        return jsonify(Spacetype.getAllSerialized()), 200
     if request.method == 'POST':
         body = request.get_json()
-        spacetype = Spacetype(
-            description=body['description']
-            )
-        db.session.add(spacetype)
-        db.session.commit()
-        return "Spacetype correctly created", 200
-    return "Invalid Method", 404 
+        newSpacetype = Spacetype.newInstance(body)
+        newSpacetype.addCommit()
+        return toJson(newSpacetype), 201
 
 @app.route('/spacetypes/<int:id>', methods=['GET', 'PUT'])
 def handle_spacetype(id):
+    spacetype = Spacetype.query.get(id)
     if request.method == 'GET':
-        spacetype = Spacetype.query.get(id)
-        return jsonify(spacetype.serialize()), 200
+        return toJson(spacetype), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Spacetype.query.get(id)
-        if update is None:
-            raise APIException('Spacetype not found', status_code=404)
-        if "description" in body:
-            update.description = body["description"]
-        db.session.commit()
-        return "Spacetype correctly edited", 200
-    return "Invalid Method", 404
+        updatedSpacetype = spacetype.updateModel(body)
+        return toJson(updatedSpacetype), 200
+
 
 @app.route('/equipments', methods=['GET', 'POST'])
 def handle_equipments():
     if request.method == 'GET':
-        equipments = Equipment.query.all()
-        equipments = list(map(lambda x: x.serialize(), equipments))
-        return jsonify(equipments), 200
+        return jsonify(Equipment.getAllSerialized()), 200
     if request.method == 'POST':
         body = request.get_json()
-        equipment = Equipment(
-            quantity=body['quantity'],
-            name=body['name'],
-            description=body['description'],
-            space_id=body['space_id']
-            )
-        db.session.add(equipment)
-        db.session.commit()
-        return "Equipments correctly created", 200
-    return "Invalid Method", 404
+        newEquipment = Equipment.newInstance(body)
+        newEquipment.addCommit()
+        return toJson(newEquipment), 201
 
 @app.route('/equipments/<int:id>', methods=['GET', 'PUT'])
 def handle_equipment(id):
-    if request.method == 'GET':
-        equipments = Equipment.query.get(id)
-        return jsonify(equipments.serialize()), 200
+    equipment = Equipment.query.get(id)
+    if request.method == 'GET':        
+        return toJson(equipment), 200
     if request.method == 'PUT':
         body = request.get_json()
-        update = Equipment.query.get(id)
-        if update is None:
-            raise APIException('Equipment not found', status_code=404)
-        if "description" in body:
-            update.description = body["description"]
-        if "name" in body:
-            update.name = body["name"]
-        if "quantity" in body:
-            update.quantity = body["quantity"]
-        db.session.commit()
-        return "Equipments correctly edited", 200
-    return "Invalid Method", 404
+        updatedEquipment = equipment.updateModel(body)
+        return toJson(updatedEquipment), 200
 
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))

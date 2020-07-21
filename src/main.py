@@ -79,18 +79,17 @@ def handle_brand(id):
 
 @app.route('/schedules', methods=['GET', 'POST'])
 def handle_schedules():
+    allSchedulesInDB = Schedule.getAllSerialized()
     if request.method == 'GET':
-        return jsonify(Schedule.getAllSerialized()), 200
+        return jsonify(allSchedulesInDB), 200
     if request.method == 'POST':
         body = request.get_json()
         schedulesToAdd = []
-        print(Schedule.getAllSerialized()[0])
         for schedule in body:
             newSchedule = Schedule.newInstance(schedule)
-        
-            print(newSchedule.serialize())
-            if ConvertDate.stringToDate(newSchedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
-                schedulesToAdd.append(newSchedule)
+            if not any(oldSchedule['date'] == ConvertDate.stringToDate(newSchedule.date) and oldSchedule['spaceID'] == newSchedule.serialize()['spaceID'] for oldSchedule in allSchedulesInDB):
+                if ConvertDate.stringToDate(newSchedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
+                    schedulesToAdd.append(newSchedule)
         if len(schedulesToAdd) == len(body):
             addCommitArray(schedulesToAdd)
             return jsonify(list(map(lambda x: x.serialize(), schedulesToAdd))), 201

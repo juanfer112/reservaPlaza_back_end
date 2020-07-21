@@ -84,8 +84,11 @@ def handle_schedules():
     if request.method == 'POST':
         body = request.get_json()
         schedulesToAdd = []
+        print(Schedule.getAllSerialized()[0])
         for schedule in body:
-            newSchedule = Schedule.newInstance(schedule)    
+            newSchedule = Schedule.newInstance(schedule)
+        
+            print(newSchedule.serialize())
             if ConvertDate.stringToDate(newSchedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
                 schedulesToAdd.append(newSchedule)
         if len(schedulesToAdd) == len(body):

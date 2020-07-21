@@ -113,7 +113,7 @@ class Space(db.Model, Mix):
 
 class Schedule(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, nullable=False, unique=True)
+    date = db.Column(db.DateTime, nullable=False)
     enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     space_id = db.Column(db.Integer, db.ForeignKey('space.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     

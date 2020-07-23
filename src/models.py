@@ -21,6 +21,11 @@ class Mix():
             setattr(model, attribute, body[attribute])
         return model
 
+    @classmethod
+    def get_enterprise_with_login_credentials(cls,name,password):
+        return db.session.query(cls).filter(Enterprise.name==name).filter(Enterprise.password==password)
+
+
     def updateModel(self, body):        
         for attribute in body:
             if hasattr(self, attribute):

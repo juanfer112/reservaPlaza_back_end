@@ -116,7 +116,7 @@ class Schedule(db.Model, Mix):
     date = db.Column(db.DateTime, nullable=False)
     enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     space_id = db.Column(db.Integer, db.ForeignKey('space.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
-    
+    __table_args__ = (db.UniqueConstraint('space_id', 'date'),)
     def serialize(self):
         return {
             "id": self.id,

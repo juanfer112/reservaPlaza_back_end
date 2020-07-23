@@ -87,9 +87,8 @@ def handle_schedules():
         schedulesToAdd = []
         for schedule in body:
             newSchedule = Schedule.newInstance(schedule)
-            if not any(oldSchedule['date'] == ConvertDate.stringToDate(newSchedule.date) and oldSchedule['spaceID'] == newSchedule.serialize()['spaceID'] for oldSchedule in allSchedulesInDB):
-                if ConvertDate.stringToDate(newSchedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
-                    schedulesToAdd.append(newSchedule)
+            if ConvertDate.stringToDate(newSchedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
+                schedulesToAdd.append(newSchedule)
         if len(schedulesToAdd) == len(body):
             addCommitArray(schedulesToAdd)
             return jsonify(list(map(lambda x: x.serialize(), schedulesToAdd))), 201

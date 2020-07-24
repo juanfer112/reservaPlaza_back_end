@@ -51,37 +51,37 @@ def login():
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
 
-    name = request.json.get('name', None)
+    email = request.json.get('email', None)
     password = request.json.get('password', None)
-
-    if not name:
-        return jsonify({"msg": "Missing name parameter"}), 400
+   
+    if not email:
+        return jsonify({"msg": "Missing email parameter"}), 400
     if not password:
         return jsonify({"msg": "Missing password parameter"}), 400
     
-    enterprise = Enterprise.get_enterprise_with_login_credentials(name,password)
+    enterprise = Enterprise.get_enterprise_with_login_credentials(email,password)
 
     if enterprise == None:
         return jsonify({"msg": "Bad name or password"}), 400
 
-    access_token = create_access_token(identity=id)
+    access_token = create_access_token(identity=email)
     
     ret = {
-        'access_token': access_token(identity=id),
-        'refresh_token': create_refresh_token(identity=id)
+        'access_token': access_token,
+        'refresh_token': create_refresh_token(identity=email)
     }
     return jsonify(ret), 200
 
     # Identity can be any data that is json serializable
     
-    return jsonify(access_token=access_token), 200
+    
 
 @app.route('/refresh', methods=['POST'])
 @jwt_refresh_token_required
 def refresh():
-    current_user = get_jwt_identity()
+    user_id = get_jwt_identity()
     ret = {
-        'access_token': create_access_token(identity=current_user)
+        'access_token': create_access_token(identity=user_id)
     }
     return jsonify(ret), 200
 
@@ -95,9 +95,9 @@ def logout():
 @app.route('/logout', methods=['DELETE'])
 @jwt_required
 def logged():
-    current_user = get_raw_identity()
+    user_id = get_raw_identity()
     blacklist.add(jti)
-    return jsonify(logged_in_as=curent_user), 200
+    return jsonify(logged_in_as=user_id), 200
 
 
 @app.errorhandler(APIException)

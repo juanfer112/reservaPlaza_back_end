@@ -23,6 +23,7 @@ class Mix():
 
     @classmethod
     def get_enterprise_with_login_credentials(cls,name,password):
+        print(Enterprise.name, 'nombre de enterprise')
         return db.session.query(cls).filter(Enterprise.name==name).filter(Enterprise.password==password)
 
 

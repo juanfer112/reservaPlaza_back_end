@@ -21,7 +21,6 @@ flask-admin = "*"
 sqlalchemy-utils = "*"
 flask-login = "*"
 flask-wtf = "*"
-flask-jwt = "*"
 flask-jwt-extended = "*"
 
 [requires]

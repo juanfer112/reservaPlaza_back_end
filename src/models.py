@@ -22,9 +22,8 @@ class Mix():
         return model
 
     @classmethod
-    def get_enterprise_with_login_credentials(cls,name,password):
-        print(Enterprise.name, 'nombre de enterprise')
-        return db.session.query(cls).filter(Enterprise.name==name).filter(Enterprise.password==password)
+    def get_enterprise_with_login_credentials(cls,email,password):
+        return db.session.query(cls).filter(Enterprise.email==email).filter(Enterprise.password==password).one_or_none()
 
 
     def updateModel(self, body):        

@@ -62,20 +62,18 @@ def login():
     enterprise = Enterprise.get_enterprise_with_login_credentials(email,password)
 
     if enterprise == None:
-        return jsonify({"msg": "Bad name or password"}), 400
+        return jsonify({"msg": "Bad email or password"}), 400
 
-    access_token = create_access_token(identity=email)
+    access_token = create_access_token(identity=enterprise.id)
     
     ret = {
         'access_token': access_token,
-        'refresh_token': create_refresh_token(identity=email)
+        'refresh_token': create_refresh_token(identity=enterprise.id)
     }
     return jsonify(ret), 200
 
     # Identity can be any data that is json serializable
     
-    
-
 @app.route('/refresh', methods=['POST'])
 @jwt_refresh_token_required
 def refresh():

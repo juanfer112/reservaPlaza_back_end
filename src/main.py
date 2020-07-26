@@ -94,6 +94,7 @@ def handle_schedules():
             if ConvertDate.stringToDate(newSchedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
                 schedulesToAdd.append(newSchedule)
         if len(schedulesToAdd) == len(body):
+            Schedule.subtractHours(schedulesToAdd)
             addCommitArray(schedulesToAdd)
             return jsonify(list(map(lambda x: x.serialize(), schedulesToAdd))), 201
         return json.dumps({"Message" : "Past dates are not selectable"}), 422         

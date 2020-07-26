@@ -141,7 +141,13 @@ class Schedule(db.Model, Mix):
         enterprise = Enterprise.query.get(id)
         if enterprise.current_hours < len(body):            
             return True
-            
+    
+    @classmethod
+    def subtractHours(cls, schedulesArray):
+        id = schedulesArray[0].enterprise_id
+        enterprise = Enterprise.query.get(id)
+        enterprise.current_hours = enterprise.current_hours - len(schedulesArray)
+
 class Equipment(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False)

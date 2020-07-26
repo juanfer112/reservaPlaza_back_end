@@ -87,12 +87,16 @@ def handle_schedules():
         schedulesToAdd = []
         for schedule in body:
             newSchedule = Schedule.newInstance(schedule)
+
+            if newSchedule.isSpaceReservedThisHour():
+                return json.dumps({"Message" : "Duplicate entity"}), 409   
+                        
             if ConvertDate.stringToDate(newSchedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
                 schedulesToAdd.append(newSchedule)
         if len(schedulesToAdd) == len(body):
             addCommitArray(schedulesToAdd)
             return jsonify(list(map(lambda x: x.serialize(), schedulesToAdd))), 201
-        return json.dumps({"Message" : "One or more dates are not selectable"}), 422         
+        return json.dumps({"Message" : "Past dates are not selectable"}), 422         
 
 @app.route('/schedules/<int:id>', methods=['GET', 'PUT'])
 def handle_schedule(id):

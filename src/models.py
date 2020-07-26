@@ -117,6 +117,7 @@ class Schedule(db.Model, Mix):
     enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     space_id = db.Column(db.Integer, db.ForeignKey('space.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     __table_args__ = (db.UniqueConstraint('space_id', 'date'),)
+    
     def serialize(self):
         return {
             "id": self.id,
@@ -125,10 +126,15 @@ class Schedule(db.Model, Mix):
             "spaceID": self.space_id
         }
 
+    def isSpaceReservedThisHour(self):
+        sched = self        
+        sched = self.query.filter_by(date=sched.date, space_id=sched.space_id)
+        return db.session.query(sched.exists()).scalar()
+            
 class Equipment(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False)
-    name = db.Column(db.String(250), nullable=False)
+    name = db.Column(db.String(250), nullable=False)    
     description = db.Column(db.String(250), nullable=False)
     space_id = db.Column(db.Integer, db.ForeignKey('space.id', ondelete='CASCADE', onupdate='CASCADE'),
         nullable=False)

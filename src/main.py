@@ -84,7 +84,8 @@ def handle_schedules():
     if request.method == 'POST':
         body = request.get_json()
         schedulesToAdd = []
-        if Schedule.userHasNotEnoughHours(body):
+        enterprise = Enterprise.query.get(body[0]['enterprise_id'])
+        if enterprise.current_hours < len(body): 
             return json.dumps({"Message" : "Enterprise has not enough hours"}), 424   
         for schedule in body:
             newSchedule = Schedule.newInstance(schedule)

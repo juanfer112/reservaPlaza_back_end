@@ -134,14 +134,6 @@ class Schedule(db.Model, Mix):
         sched = self        
         sched = self.query.filter_by(date=sched.date, space_id=sched.space_id)
         return db.session.query(sched.exists()).scalar()
-
-    @classmethod
-    def userHasNotEnoughHours(cls, body):
-        print(cls, body)
-        id = body[0]['enterprise_id']
-        enterprise = Enterprise.query.get(id)
-        if enterprise.current_hours < len(body):            
-            return True
     
     @classmethod
     def subtractHours(cls, schedulesArray):

@@ -1,6 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy_utils import force_instant_defaults
 
 db = SQLAlchemy()
+force_instant_defaults()
 
 class Mix():
     @classmethod
@@ -43,7 +45,8 @@ class Enterprise(db.Model, Mix):
     password = db.Column(db.String(80), nullable=False)
     cif = db.Column(db.String(20), nullable=False)
     phone = db.Column(db.String(20), unique=True, nullable=False)
-    tot_hours = db.Column(db.Integer, nullable=False)
+    tot_hours = db.Column(db.Integer, default=0, nullable=False)
+    current_hours = db.Column(db.Integer, nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     brands = db.relationship('Brand', cascade="all,delete", backref='enterprise', lazy=True)
     schedules = db.relationship('Schedule', cascade="all,delete", backref='enterprise', lazy=True)
@@ -58,10 +61,19 @@ class Enterprise(db.Model, Mix):
             "cif": self.cif,
             "phone": self.phone,
             "tot_hours": self.tot_hours, 
+            "current_hours": self.current_hours, 
             "is_active": self.is_active,
             "brands": list(map(lambda x: x.serialize(), self.brands)),
-            "schedules": list(map(lambda x: x.serialize(), self.schedules)) 
-        }
+            "schedules": list(map(lambda x: x.serialize(), self.schedules))
+        }                                                         
+
+    def userHasNotEnoughHours(self, length):
+        if self.current_hours < length:            
+            return True
+        else: False
+
+    def subtractHours(self, length):
+        self.current_hours = self.current_hours - length
 
 class Brand(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
@@ -79,7 +91,7 @@ class Brand(db.Model, Mix):
             "description": self.description,
             "logo": self.logo,
             "is_active": self.is_active,
-            "enterpriseID": self.enterprise_id
+            "enterprise_id": self.enterprise_id
         }
 
 class Spacetype(db.Model, Mix):
@@ -106,7 +118,7 @@ class Space(db.Model, Mix):
         return {
             "id": self.id,
             "name": self.name,
-            "spacetypeID": self.spacetype_id,
+            "spacetype_id": self.spacetype_id,
             "equipments": list(map(lambda x: x.serialize(), self.equipments)),
             "schedules": list(map(lambda x: x.serialize(), self.schedules))
         }
@@ -114,23 +126,23 @@ class Space(db.Model, Mix):
 class Schedule(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.DateTime, nullable=False)
-    enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     space_id = db.Column(db.Integer, db.ForeignKey('space.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
+    enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     __table_args__ = (db.UniqueConstraint('space_id', 'date'),)
     
     def serialize(self):
         return {
             "id": self.id,
             "date": self.date,
-            "enterpriseID": self.enterprise_id,
-            "spaceID": self.space_id
+            "space_id": self.space_id,
+            "enterprise_id": self.enterprise_id
         }
 
     def isSpaceReservedThisHour(self):
         sched = self        
         sched = self.query.filter_by(date=sched.date, space_id=sched.space_id)
-        return db.session.query(sched.exists()).scalar()
-            
+        return db.session.query(sched.exists()).scalar() 
+
 class Equipment(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False)
@@ -145,5 +157,5 @@ class Equipment(db.Model, Mix):
             "quantity": self.quantity,
             "name": self.name,
             "description": self.description,
-            "spaceID": self.space_id
+            "space_id": self.space_id
         }

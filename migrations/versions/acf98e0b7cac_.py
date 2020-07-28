@@ -26,7 +26,7 @@ def upgrade():
     sa.Column('password', sa.String(length=80), nullable=False),
     sa.Column('cif', sa.String(length=20), nullable=False),
     sa.Column('phone', sa.String(length=20), nullable=False),
-    sa.Column('tot_hours', sa.Integer(), nullable=False),
+    sa.Column('current_hours', sa.Integer(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),

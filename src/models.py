@@ -67,6 +67,14 @@ class Enterprise(db.Model, Mix):
             "schedules": list(map(lambda x: x.serialize(), self.schedules))
         }                                                         
 
+    def userHasNotEnoughHours(self, length):
+        if self.current_hours < length:            
+            return True
+        else: False
+
+    def subtractHours(self, length):
+        self.current_hours = self.current_hours - length
+
 class Brand(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
@@ -133,13 +141,7 @@ class Schedule(db.Model, Mix):
     def isSpaceReservedThisHour(self):
         sched = self        
         sched = self.query.filter_by(date=sched.date, space_id=sched.space_id)
-        return db.session.query(sched.exists()).scalar()
-    
-    @classmethod
-    def subtractHours(cls, schedulesArray):
-        id = schedulesArray[0].enterprise_id
-        enterprise = Enterprise.query.get(id)
-        enterprise.current_hours = enterprise.current_hours - len(schedulesArray)
+        return db.session.query(sched.exists()).scalar() 
 
 class Equipment(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)

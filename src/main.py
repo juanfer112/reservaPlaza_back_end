@@ -79,9 +79,8 @@ def handle_brand(id):
 
 @app.route('/schedules', methods=['GET', 'POST'])
 def handle_schedules():
-    allSchedulesInDB = Schedule.getAllSerialized()
     if request.method == 'GET':
-        return jsonify(allSchedulesInDB), 200
+        return jsonify(Schedule.getAllSerialized()), 200
     if request.method == 'POST':
         body = request.get_json()
         schedulesToAdd = []

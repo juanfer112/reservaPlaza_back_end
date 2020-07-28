@@ -49,7 +49,7 @@ class Enterprise(db.Model, Mix):
     current_hours = db.Column(db.Integer, nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     brands = db.relationship('Brand', cascade="all,delete", backref='enterprise', lazy=True)
-    schedules = db.relationship('Schedule', cascade="all,delete", backref='enterprise', lazy=True)
+    schedules_id = db.Column(db.Integer, db.ForeignKey('schedule.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     
     def serialize(self):
         return {
@@ -64,8 +64,8 @@ class Enterprise(db.Model, Mix):
             "current_hours": self.current_hours, 
             "is_active": self.is_active,
             "brands": list(map(lambda x: x.serialize(), self.brands)),
-            "schedules": list(map(lambda x: x.serialize(), self.schedules)) 
-        }
+            "schedules": list(map(lambda x: x.serialize(), self.schedules))
+        }                                                         
 
 class Brand(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
@@ -118,16 +118,16 @@ class Space(db.Model, Mix):
 class Schedule(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.DateTime, nullable=False)
-    enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     space_id = db.Column(db.Integer, db.ForeignKey('space.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
+    enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     __table_args__ = (db.UniqueConstraint('space_id', 'date'),)
     
     def serialize(self):
         return {
             "id": self.id,
             "date": self.date,
-            "enterprise_id": self.enterprise_id,
-            "space_id": self.space_id
+            "space_id": self.space_id,
+            "enterprise_id": self.enterprise_id
         }
 
     def isSpaceReservedThisHour(self):

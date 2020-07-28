@@ -49,7 +49,7 @@ class Enterprise(db.Model, Mix):
     current_hours = db.Column(db.Integer, nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     brands = db.relationship('Brand', cascade="all,delete", backref='enterprise', lazy=True)
-    schedules_id = db.Column(db.Integer, db.ForeignKey('schedule.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
+    schedules = db.relationship('Schedule', cascade="all,delete", backref='enterprise', lazy=True)
     
     def serialize(self):
         return {
@@ -137,6 +137,7 @@ class Schedule(db.Model, Mix):
 
     @classmethod
     def userHasNotEnoughHours(cls, body):
+        print(cls, body)
         id = body[0]['enterprise_id']
         enterprise = Enterprise.query.get(id)
         if enterprise.current_hours < len(body):            

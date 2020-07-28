@@ -84,14 +84,11 @@ def handle_schedules():
     if request.method == 'POST':
         body = request.get_json()
         schedulesToAdd = []
-
         enterprise = Enterprise.query.get(body[0]['enterprise_id'])        
         if enterprise.userHasNotEnoughHours(len(body)): 
-            return json.dumps({"Message" : "Enterprise has not enough hours"}), 424   
-
+            return json.dumps({"Message" : "Enterprise has not enough hours"}), 424 
         for schedule in body:
             newSchedule = Schedule.newInstance(schedule)
-
             if newSchedule.isSpaceReservedThisHour():
                 return json.dumps({"Message" : "Duplicate entity"}), 409        
             if ConvertDate.stringToDate(newSchedule.date) > ConvertDate.fixedTimeZoneCurrentTime():

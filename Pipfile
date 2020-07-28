@@ -20,7 +20,6 @@ mysqlclient = "*"
 flask-admin = "*"
 sqlalchemy-utils = "*"
 eralchemy = "*"
-graphviz = "*"
 flask-login = "*"
 
 [requires]

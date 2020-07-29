@@ -95,9 +95,9 @@ def handle_schedules():
         return json.dumps({"Message" : "Enterprise has not enough hours"}), 424
     for schedule in body:
         newSchedule = Schedule.newInstance(schedule)
-         if newSchedule.isSpaceReservedThisHour():
+        if newSchedule.isSpaceReservedThisHour():
             return json.dumps({"Message" : "Duplicate entity"}), 409        
-         if ConvertDate.stringToDate(newSchedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
+        if ConvertDate.stringToDate(newSchedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
             schedulesToAdd.append(newSchedule)
     if len(schedulesToAdd) == len(body):
         enterprise.subtractHours(len(schedulesToAdd))

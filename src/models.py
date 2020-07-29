@@ -23,6 +23,7 @@ class Mix():
             setattr(model, attribute, body[attribute])
         return model
 
+    @classmethod
     def updateModel(self, body):        
         for attribute in body:
             if hasattr(self, attribute):
@@ -49,7 +50,7 @@ class Enterprise(db.Model, Mix):
     current_hours = db.Column(db.Integer, nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     brands = db.relationship('Brand', cascade="all,delete", backref='enterprise', lazy=True)
-    schedules = db.relationship('Schedule', cascade="all,delete", backref='enterprise', lazy=True)
+    schedules = db.relationship("Schedule", back_populates="enterprise")
     
     def serialize(self):
         return {
@@ -128,6 +129,7 @@ class Schedule(db.Model, Mix):
     date = db.Column(db.DateTime, nullable=False)
     space_id = db.Column(db.Integer, db.ForeignKey('space.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
+    enterprise = db.relationship("Enterprise", back_populates="schedules")
     __table_args__ = (db.UniqueConstraint('space_id', 'date'),)
     
     def serialize(self):
@@ -135,7 +137,9 @@ class Schedule(db.Model, Mix):
             "id": self.id,
             "date": self.date,
             "space_id": self.space_id,
-            "enterprise_id": self.enterprise_id
+            "enterprise_id": self.enterprise_id,
+            "enterprise": self.enterprise.name,
+            "ciao": self.enterprise.name
         }
 
     def isSpaceReservedThisHour(self):

@@ -83,41 +83,27 @@ def handle_schedule_before_after(date):
     today = ConvertDate.stringToDate(date)
     start = today - timedelta(days=today.weekday()) - timedelta(days=8)
     end = start + timedelta(days=22)
-    ciao = db.session.query(Schedule).filter(start < Schedule.date).filter(Schedule.date < end )
-    return jsonify(list(map(lambda y: y.serialize(), ciao))), 200
+    schedules = db.session.query(Schedule).filter(start < Schedule.date).filter(Schedule.date < end )
+    return jsonify(list(map(lambda y: y.serialize(), schedules))), 200
 
-@app.route('/schedules', methods=['GET', 'POST'])
+@app.route('/schedules', methods=['POST'])
 def handle_schedules():
-    if request.method == 'GET':
-        today = datetime.now()
-        start = today - timedelta(days=today.weekday()) - timedelta(days=8)
-        end = start + timedelta(days=22)
-        
-
-        print(start.strftime("%Y-%m-%d %H:%M:%S"),'@@@@@@@@@@@@', end.strftime("%Y-%m-%d %H:%M:%S"))
-        return jsonify(Schedule.getAllSerialized()), 200
-
-
-
-
-
-    if request.method == 'POST':
-        body = request.get_json()
-        schedulesToAdd = []
-        enterprise = Enterprise.query.get(body[0]['enterprise_id'])        
-        if enterprise.userHasNotEnoughHours(len(body)): 
-            return json.dumps({"Message" : "Enterprise has not enough hours"}), 424
-        for schedule in body:
-            newSchedule = Schedule.newInstance(schedule)
-            if newSchedule.isSpaceReservedThisHour():
-                return json.dumps({"Message" : "Duplicate entity"}), 409        
-            if ConvertDate.stringToDate(newSchedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
-                schedulesToAdd.append(newSchedule)
-        if len(schedulesToAdd) == len(body):
-            enterprise.subtractHours(len(schedulesToAdd))
-            addCommitArray(schedulesToAdd)
-            return jsonify(list(map(lambda x: x.serialize(), schedulesToAdd))), 201
-        return json.dumps({"Message" : "Past dates are not selectable"}), 422         
+    body = request.get_json()
+    schedulesToAdd = []
+    enterprise = Enterprise.query.get(body[0]['enterprise_id'])        
+    if enterprise.userHasNotEnoughHours(len(body)): 
+        return json.dumps({"Message" : "Enterprise has not enough hours"}), 424
+    for schedule in body:
+        newSchedule = Schedule.newInstance(schedule)
+         if newSchedule.isSpaceReservedThisHour():
+            return json.dumps({"Message" : "Duplicate entity"}), 409        
+         if ConvertDate.stringToDate(newSchedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
+            schedulesToAdd.append(newSchedule)
+    if len(schedulesToAdd) == len(body):
+        enterprise.subtractHours(len(schedulesToAdd))
+        addCommitArray(schedulesToAdd)
+        return jsonify(list(map(lambda x: x.serialize(), schedulesToAdd))), 201
+    return json.dumps({"Message" : "Past dates are not selectable"}), 422         
 
 @app.route('/schedules/<int:id>', methods=['GET', 'PUT'])
 def handle_schedule(id):

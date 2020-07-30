@@ -50,6 +50,7 @@ class Enterprise(db.Model, Mix):
     phone = db.Column(db.String(20), unique=True, nullable=False)
     tot_hours = db.Column(db.Integer, nullable=False)
     is_active = db.Column(db.Boolean, default=True)
+    is_admin = db.Column(db.Boolean, default=False)
     brands = db.relationship('Brand', cascade="all,delete", backref='enterprise', lazy=True)
     schedules = db.relationship('Schedule', cascade="all,delete", backref='enterprise', lazy=True)
     
@@ -67,6 +68,9 @@ class Enterprise(db.Model, Mix):
             "brands": list(map(lambda x: x.serialize(), self.brands)),
             "schedules": list(map(lambda x: x.serialize(), self.schedules)) 
         }
+    
+    # def get_enterprise_with_login_credentials(self,email,password):
+        #return db.session.query().filter(self.email==email).filter(self.password==password).one_or_none()
 
 class Brand(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)

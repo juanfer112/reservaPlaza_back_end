@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from date_convert import ConvertDate
 from flask_login import LoginManager
 from flask_jwt_extended import (
-    JWTManager, jwt_required, create_access_token, create_refresh_token, jwt_refresh_token_required
+    JWTManager, jwt_required, create_access_token, create_refresh_token, jwt_refresh_token_required, get_jwt_identity
 )
 
 app = Flask(__name__)
@@ -64,11 +64,11 @@ def login():
     if enterprise == None:
         return jsonify({"msg": "Bad email or password"}), 400
 
-    access_token = create_access_token(identity=enterprise.id)
+    access_token = create_access_token(identity=enterprise.email)
     
     ret = {
         'access_token': access_token,
-        'refresh_token': create_refresh_token(identity=enterprise.id)
+        'refresh_token': create_refresh_token(identity=enterprise.email)
     }
     return jsonify(ret), 200
 
@@ -82,13 +82,20 @@ def refresh():
         'access_token': create_access_token(identity=user_id)
     }
     return jsonify(ret), 200
-
-@app.route('/logout', methods=['DELETE'])
+    
+@app.route('/protected', methods=['GET'])
 @jwt_required
-def logout():
-    jti = get_raw_jwt()['jti']
-    blacklist.add(jti)
-    return jsonify({"msg": "Successfully logged out"}), 200
+def protected():
+    # Access the identity of the current user with get_jwt_identity
+    current_user = get_jwt_identity()
+    return jsonify(logged_in_as = current_user), 200
+    
+#@app.route('/logout', methods=['DELETE'])
+#@jwt_required
+#def logout():
+#    jti = get_raw_jwt()['jti']
+#    blacklist.add(jti)
+#    return jsonify({"msg": "Successfully logged out"}), 200
 
 @app.route('/logout', methods=['DELETE'])
 @jwt_required

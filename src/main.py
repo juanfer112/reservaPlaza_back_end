@@ -102,7 +102,7 @@ def handle_schedules():
     if len(schedulesToAdd) == len(body):
         enterprise.subtractHours(len(schedulesToAdd))
         addCommitArray(schedulesToAdd)
-        return jsonify(list(map(lambda x: x.serialize(), schedulesToAdd))), 201
+        return json.dumps({"Message" : "Correctly scheduled"}), 201
     return json.dumps({"Message" : "Past dates are not selectable"}), 422         
 
 @app.route('/schedules/<int:id>', methods=['GET', 'PUT'])

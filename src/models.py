@@ -114,7 +114,7 @@ class Space(db.Model, Mix):
     schedules = db.relationship('Schedule', cascade="all,delete", backref='space', lazy=True)
     spacetype_id = db.Column(db.Integer, db.ForeignKey('spacetype.id', ondelete='CASCADE', onupdate='CASCADE'),
         nullable=False)
-    
+    schedules = db.relationship("Schedule", back_populates="space")
     def serialize(self):
         return {
             "id": self.id,
@@ -130,6 +130,7 @@ class Schedule(db.Model, Mix):
     space_id = db.Column(db.Integer, db.ForeignKey('space.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprise.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     enterprise = db.relationship("Enterprise", back_populates="schedules")
+    space = db.relationship("Space", back_populates="schedules")
     __table_args__ = (db.UniqueConstraint('space_id', 'date'),)
     
     def serialize(self):
@@ -138,8 +139,8 @@ class Schedule(db.Model, Mix):
             "date": self.date,
             "space_id": self.space_id,
             "enterprise_id": self.enterprise_id,
-            "enterprise": self.enterprise.name,
-            "ciao": self.enterprise.name
+            "enterprise_name": self.enterprise.name,
+            "space_name": self.space.name
         }
 
     def isSpaceReservedThisHour(self):

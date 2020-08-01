@@ -28,7 +28,8 @@ class Mix():
         for attribute in body:
             if hasattr(self, attribute):
                 setattr(self, attribute, body[attribute])
-                db.session.commit()                
+                db.session.commit()
+        print(self)                
         return self
 
     def addCommit(self):

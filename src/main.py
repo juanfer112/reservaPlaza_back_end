@@ -108,12 +108,14 @@ def handle_schedules():
 @app.route('/schedules/<int:id>', methods=['GET', 'PUT'])
 def handle_schedule(id):
     schedule = Schedule.query.get(id)
-    if request.method == 'GET':       
+    if request.method == 'GET':
         return toJson(schedule), 200
     if request.method == 'PUT':
         body = request.get_json()
+        print(body)
         updatedSchedule = schedule.updateModel(body)
-        return toJson(updatedSchedule), 200
+        print(updatedSchedule)
+        return "updatedSchedule", 200
 
 @app.route('/spaces', methods=['GET', 'POST'])
 def handle_spaces():

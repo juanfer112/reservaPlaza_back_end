@@ -22,16 +22,18 @@ class Mix():
         for attribute in body:
             setattr(model, attribute, body[attribute])
         return model
-
+    
     @classmethod
-    def updateModel(self, body):        
+    def isSpaceReservedThisHour(cls, date, space_id):
+        sched = cls.query.filter_by(date=date, space_id=space_id)
+        return db.session.query(sched.exists()).scalar() 
+
+    def updateModel(self, body):   
         for attribute in body:
             if hasattr(self, attribute):
-                setattr(self, attribute, body[attribute])
-                db.session.commit()
-        print(self)                
-        return self
-
+                setattr(self, attribute, body[attribute])            
+        return True
+       
     def addCommit(self):
         db.session.add(self)
         self.store()
@@ -143,11 +145,6 @@ class Schedule(db.Model, Mix):
             "enterprise_name": self.enterprise.name,
             "space_name": self.space.name
         }
-
-    def isSpaceReservedThisHour(self):
-        sched = self        
-        sched = self.query.filter_by(date=sched.date, space_id=sched.space_id)
-        return db.session.query(sched.exists()).scalar() 
 
 class Equipment(db.Model, Mix):
     id = db.Column(db.Integer, primary_key=True)

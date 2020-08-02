@@ -55,8 +55,9 @@ def handle_enterprise(id):
         return toJson(enterprise), 200
     if request.method == 'PUT':
         body = request.get_json()
-        updatedEnterprise = enterprise.updateModel(body)
-        return toJson(updatedEnterprise), 200
+        enterprise.updateModel(body)
+        enterprise.store()
+        return json.dumps({"Message" : "Correctly scheduled"}), 200
 
 @app.route('/brands', methods=['GET', 'POST'])
 def handle_brands():
@@ -75,8 +76,9 @@ def handle_brand(id):
         return toJson(brand), 200
     if request.method == 'PUT':
         body = request.get_json()
-        updatedBrand = brand.updateModel(body)
-        return toJson(updatedBrand), 200
+        brand.updateModel(body)
+        brand.store()
+        return json.dumps({"Message" : "Correctly scheduled"}), 200
 
 @app.route('/schedules/<date>', methods=['GET'])
 def handle_schedule_before_after(date): 
@@ -95,25 +97,32 @@ def handle_schedules():
         return json.dumps({"Message" : "Enterprise has not enough hours"}), 424
     for schedule in body:
         newSchedule = Schedule.newInstance(schedule)
-        if newSchedule.isSpaceReservedThisHour():
+        if newSchedule.isSpaceReservedThisHour(newSchedule.date, newSchedule.space_id):
             return json.dumps({"Message" : "Duplicate entity"}), 409        
         if ConvertDate.stringToDate(newSchedule.date) > ConvertDate.fixedTimeZoneCurrentTime():
             schedulesToAdd.append(newSchedule)
     if len(schedulesToAdd) == len(body):
         enterprise.subtractHours(len(schedulesToAdd))
         addCommitArray(schedulesToAdd)
-        return jsonify(list(map(lambda x: x.serialize(), schedulesToAdd))), 201
+        return json.dumps({"Message" : "Correctly scheduled"}), 201
     return json.dumps({"Message" : "Past dates are not selectable"}), 422         
 
 @app.route('/schedules/<int:id>', methods=['GET', 'PUT'])
 def handle_schedule(id):
     schedule = Schedule.query.get(id)
-    if request.method == 'GET':       
+    if request.method == 'GET':
         return toJson(schedule), 200
     if request.method == 'PUT':
         body = request.get_json()
-        updatedSchedule = schedule.updateModel(body)
-        return toJson(updatedSchedule), 200
+        date = schedule.date
+        space_id = schedule.space_id
+        if body['date']: date = body['date']
+        if body['space_id']: space_id = body['space_id']
+        if Schedule.isSpaceReservedThisHour(date, space_id ):
+            return json.dumps({"Message" : "Duplicate entity"}), 409
+        schedule.updateModel(body)
+        schedule.store()        
+        return json.dumps({"Message" : "Correctly scheduled"}), 200
 
 @app.route('/spaces', methods=['GET', 'POST'])
 def handle_spaces():
@@ -132,8 +141,9 @@ def handle_space(id):
         return toJson(space), 200
     if request.method == 'PUT':
         body = request.get_json()
-        updatedSpace = space.updateModel(body)
-        return toJson(updatedSpace), 200
+        space.updateModel(body)
+        space.store()
+        return json.dumps({"Message" : "Correctly scheduled"}), 200
 
 @app.route('/spacetypes', methods=['GET', 'POST'])
 def handle_spacetypes():
@@ -152,8 +162,9 @@ def handle_spacetype(id):
         return toJson(spacetype), 200
     if request.method == 'PUT':
         body = request.get_json()
-        updatedSpacetype = spacetype.updateModel(body)
-        return toJson(updatedSpacetype), 200
+        spacetype.updateModel(body)
+        spacetype.store()
+        return json.dumps({"Message" : "Correctly scheduled"}), 200
 
 
 @app.route('/equipments', methods=['GET', 'POST'])
@@ -173,8 +184,9 @@ def handle_equipment(id):
         return toJson(equipment), 200
     if request.method == 'PUT':
         body = request.get_json()
-        updatedEquipment = equipment.updateModel(body)
-        return toJson(updatedEquipment), 200
+        equipment.updateModel(body)
+        equipment.store()
+        return json.dumps({"Message" : "Correctly scheduled"}), 200
 
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))

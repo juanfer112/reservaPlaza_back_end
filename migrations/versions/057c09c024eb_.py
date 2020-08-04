@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: acf98e0b7cac
+Revision ID: 057c09c024eb
 Revises: 
-Create Date: 2020-07-21 08:49:56.925671
+Create Date: 2020-08-04 17:29:11.140114
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'acf98e0b7cac'
+revision = '057c09c024eb'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -26,8 +26,10 @@ def upgrade():
     sa.Column('password', sa.String(length=80), nullable=False),
     sa.Column('cif', sa.String(length=20), nullable=False),
     sa.Column('phone', sa.String(length=20), nullable=False),
+    sa.Column('tot_hours', sa.Integer(), nullable=False),
     sa.Column('current_hours', sa.Integer(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=True),
+    sa.Column('is_admin', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('phone')
@@ -66,12 +68,12 @@ def upgrade():
     op.create_table('schedule',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('date', sa.DateTime(), nullable=False),
-    sa.Column('enterprise_id', sa.Integer(), nullable=False),
     sa.Column('space_id', sa.Integer(), nullable=False),
+    sa.Column('enterprise_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['enterprise_id'], ['enterprise.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['space_id'], ['space.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('date')
+    sa.UniqueConstraint('space_id', 'date')
     )
     # ### end Alembic commands ###
 

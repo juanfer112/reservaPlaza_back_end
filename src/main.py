@@ -14,6 +14,7 @@ from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, create_refresh_token, jwt_refresh_token_required, get_jwt_identity
 )
 from sqlalchemy import extract
+
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_CONNECTION_STRING')
@@ -32,18 +33,10 @@ jwt = JWTManager(app)
 
 blacklist=set()
 
-login_manager= LoginManager()
-login_manager.init_app(app)
-login_manager.login_view='login'
-
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
     jti = decrypted_token['jti']
     return jti in blacklist
-
-@login_manager.user_loader
-def load_user(user_id):
-    return Enterprise.query.filter_by(id=user_id).one()
 
 @app.route('/login', methods=['POST'])
 def login():

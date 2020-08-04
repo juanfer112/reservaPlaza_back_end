@@ -79,10 +79,7 @@ class Enterprise(db.Model, Mix):
         }
     
     # def get_enterprise_with_login_credentials(self,email,password):
-        #return db.session.query().filter(self.email==email).filter(self.password==password).one_or_none()
-=======
-            "schedules": list(map(lambda x: x.serialize(), self.schedules))
-        }                                                         
+        #return db.session.query().filter(self.email==email).filter(self.password==password).one_or_none()                                                       
 
     def userHasNotEnoughHours(self, length):
         if self.current_hours < length:            

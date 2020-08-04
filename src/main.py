@@ -10,8 +10,10 @@ from models import db, Enterprise, Schedule, Space, Equipment, Spacetype, Brand
 from create_database import init_database
 from datetime import datetime, timedelta, date
 from date_convert import ConvertDate
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token, create_refresh_token, jwt_refresh_token_required, get_jwt_identity
+)
 from sqlalchemy import extract
-
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_CONNECTION_STRING')
@@ -22,6 +24,85 @@ MIGRATE = Migrate(app, db)
 db.init_app(app)
 CORS(app)
 setup_admin(app)
+
+app.config['JWT_SECRET_KEY'] = 'super-secret'
+app.config['JWT_BLACKLIST_'] = True
+app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+jwt = JWTManager(app)
+
+blacklist=set()
+
+login_manager= LoginManager()
+login_manager.init_app(app)
+login_manager.login_view='login'
+
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    jti = decrypted_token['jti']
+    return jti in blacklist
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Enterprise.query.filter_by(id=user_id).one()
+
+@app.route('/login', methods=['POST'])
+def login():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+
+    email = request.json.get('email', None)
+    password = request.json.get('password', None)
+   
+    if not email:
+        return jsonify({"msg": "Missing email parameter"}), 400
+    if not password:
+        return jsonify({"msg": "Missing password parameter"}), 400
+    
+    enterprise = Enterprise.get_enterprise_with_login_credentials(email,password)
+
+    if enterprise == None:
+        return jsonify({"msg": "Bad email or password"}), 400
+
+    access_token = create_access_token(identity=enterprise.email)
+    
+    ret = {
+        'access_token': access_token,
+        'refresh_token': create_refresh_token(identity=enterprise.email)
+    }
+    return jsonify(ret), 200
+
+    # Identity can be any data that is json serializable
+    
+@app.route('/refresh', methods=['POST'])
+@jwt_refresh_token_required
+def refresh():
+    user_id = get_jwt_identity()
+    ret = {
+        'access_token': create_access_token(identity=user_id)
+    }
+    return jsonify(ret), 200
+    
+@app.route('/protected', methods=['GET'])
+@jwt_required
+def protected():
+    # Access the identity of the current user with get_jwt_identity
+    current_user = get_jwt_identity()
+    return jsonify(logged_in_as = current_user), 200
+    
+#@app.route('/logout', methods=['DELETE'])
+#@jwt_required
+#def logout():
+#    jti = get_raw_jwt()['jti']
+#    blacklist.add(jti)
+#    return jsonify({"msg": "Successfully logged out"}), 200
+
+@app.route('/logout', methods=['DELETE'])
+@jwt_required
+def logged():
+    user_id = get_raw_identity()
+    blacklist.add(jti)
+    return jsonify(logged_in_as=user_id), 200
+
 
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):

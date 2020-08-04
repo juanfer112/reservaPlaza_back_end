@@ -20,6 +20,8 @@ mysqlclient = "*"
 flask-admin = "*"
 sqlalchemy-utils = "*"
 flask-login = "*"
+flask-wtf = "*"
+flask-jwt-extended = "*"
 
 [requires]
 python_version = "3.7"

@@ -19,7 +19,6 @@ gunicorn = "*"
 mysqlclient = "*"
 flask-admin = "*"
 sqlalchemy-utils = "*"
-eralchemy = "*"
 flask-login = "*"
 
 [requires]

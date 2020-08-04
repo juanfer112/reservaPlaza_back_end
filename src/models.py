@@ -28,7 +28,13 @@ class Mix():
         sched = cls.query.filter_by(date=date, space_id=space_id)
         return db.session.query(sched.exists()).scalar() 
 
-    def updateModel(self, body):   
+    @classmethod
+    def get_enterprise_with_login_credentials(cls,email,password):
+        return db.session.query(cls).filter(Enterprise.email==email).filter(Enterprise.password==password).one_or_none()
+
+
+    def updateModel(self, body):           
+
         for attribute in body:
             if hasattr(self, attribute):
                 setattr(self, attribute, body[attribute])            
@@ -52,6 +58,7 @@ class Enterprise(db.Model, Mix):
     tot_hours = db.Column(db.Integer, default=0, nullable=False)
     current_hours = db.Column(db.Integer, nullable=False)
     is_active = db.Column(db.Boolean, default=True)
+    is_admin = db.Column(db.Boolean, default=False)
     brands = db.relationship('Brand', cascade="all,delete", backref='enterprise', lazy=True)
     schedules = db.relationship("Schedule", back_populates="enterprise")
     
@@ -68,6 +75,12 @@ class Enterprise(db.Model, Mix):
             "current_hours": self.current_hours, 
             "is_active": self.is_active,
             "brands": list(map(lambda x: x.serialize(), self.brands)),
+            "schedules": list(map(lambda x: x.serialize(), self.schedules)) 
+        }
+    
+    # def get_enterprise_with_login_credentials(self,email,password):
+        #return db.session.query().filter(self.email==email).filter(self.password==password).one_or_none()
+=======
             "schedules": list(map(lambda x: x.serialize(), self.schedules))
         }                                                         
 

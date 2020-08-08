@@ -68,7 +68,7 @@ def login():
     ret = {
         'access_token': access_token,
         'refresh_token': create_refresh_token(identity=enterprise.email),
-        'is_admin': enterprise.check_is_admin()
+        'is_admin': enterprise.is_admin()
     }
     return jsonify(ret), 200
 

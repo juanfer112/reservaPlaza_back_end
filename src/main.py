@@ -32,18 +32,18 @@ jwt = JWTManager(app)
 
 blacklist=set()
 
-login_manager= LoginManager()
-login_manager.init_app(app)
-login_manager.login_view='login'
+# login_manager= LoginManager()
+# login_manager.init_app(app)
+# login_manager.login_view='login'
 
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
     jti = decrypted_token['jti']
     return jti in blacklist
 
-@login_manager.user_loader
-def load_user(user_id):
-    return Enterprise.query.filter_by(id=user_id).one()
+# @login_manager.user_loader
+# def load_user(user_id):
+#     return Enterprise.query.filter_by(id=user_id).one()
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -67,7 +67,8 @@ def login():
     
     ret = {
         'access_token': access_token,
-        'refresh_token': create_refresh_token(identity=enterprise.email)
+        'refresh_token': create_refresh_token(identity=enterprise.email),
+        'is_admin': enterprise.is_admin()
     }
     return jsonify(ret), 200
 
@@ -167,6 +168,12 @@ def handle_schedule_before_after(date):
     start = today - timedelta(days=today.weekday()) - timedelta(days=8)
     end = start + timedelta(days=22)
     schedules = db.session.query(Schedule).filter(start < Schedule.date).filter(Schedule.date < end )
+    return jsonify(list(map(lambda y: y.serialize(), schedules))), 200
+
+@app.route('/schedules_by_month_and_year/<date>', methods=['GET'])
+def handle_schedule_by_month(date): 
+    month_and_year_date = ConvertDate.stringToDate(date)
+    schedules = db.session.query(Schedule).filter(extract('month', Schedule.date) == month_and_year_date.month,extract('year', Schedule.date) == month_and_year_date.year).all()
     return jsonify(list(map(lambda y: y.serialize(), schedules))), 200
 
 @app.route('/schedules', methods=['POST'])

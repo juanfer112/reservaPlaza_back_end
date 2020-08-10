@@ -31,7 +31,9 @@ class Mix():
     @classmethod
     def get_enterprise_with_login_credentials(cls,email,password):
         return db.session.query(cls).filter(Enterprise.email==email).filter(Enterprise.password==password).one_or_none()
-
+    
+    def is_admin(self):     #esta funcion retorna una respuesta de true o false, indicando si es administrador o no. 
+        return self.is_admin 
 
     def updateModel(self, body):           
 
@@ -79,10 +81,7 @@ class Enterprise(db.Model, Mix):
         }
     
     # def get_enterprise_with_login_credentials(self,email,password):
-        #return db.session.query().filter(self.email==email).filter(self.password==password).one_or_none()
-=======
-            "schedules": list(map(lambda x: x.serialize(), self.schedules))
-        }                                                         
+        #return db.session.query().filter(self.email==email).filter(self.password==password).one_or_none()                                         
 
     def userHasNotEnoughHours(self, length):
         if self.current_hours < length:            

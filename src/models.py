@@ -125,6 +125,7 @@ class Space(db.Model, Mix):
     name = db.Column(db.String(250), nullable=False) 
     equipments = db.relationship('Equipment', cascade="all,delete", backref='space', lazy=True)
     schedules = db.relationship('Schedule', cascade="all,delete", backref='space', lazy=True)
+    description = db.Column(db.String(250), nullable=False)
     spacetype_id = db.Column(db.Integer, db.ForeignKey('spacetype.id', ondelete='CASCADE', onupdate='CASCADE'),
         nullable=False)
     schedules = db.relationship("Schedule", back_populates="space")
@@ -133,6 +134,7 @@ class Space(db.Model, Mix):
             "id": self.id,
             "name": self.name,
             "spacetype_id": self.spacetype_id,
+            "description": self.description,
             "equipments": list(map(lambda x: x.serialize(), self.equipments)),
             "schedules": list(map(lambda x: x.serialize(), self.schedules))
         }

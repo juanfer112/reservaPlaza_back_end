@@ -33,10 +33,18 @@ jwt = JWTManager(app)
 
 blacklist=set()
 
+# login_manager= LoginManager()
+# login_manager.init_app(app)
+# login_manager.login_view='login'
+
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
     jti = decrypted_token['jti']
     return jti in blacklist
+
+# @login_manager.user_loader
+# def load_user(user_id):
+#     return Enterprise.query.filter_by(id=user_id).one()
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -60,7 +68,8 @@ def login():
     
     ret = {
         'access_token': access_token,
-        'refresh_token': create_refresh_token(identity=enterprise.email)
+        'refresh_token': create_refresh_token(identity=enterprise.email),
+        'is_admin': enterprise.is_admin()
     }
     return jsonify(ret), 200
 

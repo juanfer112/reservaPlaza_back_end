@@ -171,6 +171,12 @@ def handle_schedule_before_after(date):
     schedules = db.session.query(Schedule).filter(start < Schedule.date).filter(Schedule.date < end )
     return jsonify(list(map(lambda y: y.serialize(), schedules))), 200
 
+@app.route('/schedules_by_month_and_year/<date>', methods=['GET'])
+def handle_schedule_by_month(date): 
+    month_and_year_date = ConvertDate.stringToDate(date)
+    schedules = db.session.query(Schedule).filter(extract('month', Schedule.date) == month_and_year_date.month,extract('year', Schedule.date) == month_and_year_date.year).all()
+    return jsonify(list(map(lambda y: y.serialize(), schedules))), 200
+
 @app.route('/schedules', methods=['POST'])
 def handle_schedules():
     body = request.get_json()

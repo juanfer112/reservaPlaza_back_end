@@ -14,6 +14,7 @@ from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, create_refresh_token, jwt_refresh_token_required, get_jwt_identity
 )
 from sqlalchemy import extract
+
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_CONNECTION_STRING')

@@ -31,7 +31,9 @@ class Mix():
     @classmethod
     def get_enterprise_with_login_credentials(cls,email,password):
         return db.session.query(cls).filter(Enterprise.email==email).filter(Enterprise.password==password).one_or_none()
-
+    
+    def is_admin(self):     #esta funcion retorna una respuesta de true o false, indicando si es administrador o no. 
+        return self.is_admin 
 
     def updateModel(self, body):           
         for attribute in body:
@@ -81,6 +83,7 @@ class Enterprise(db.Model, Mix):
         #return db.session.query().filter(self.email==email).filter(self.password==password).one_or_none()
                                          
 
+
     def userHasNotEnoughHours(self, length):
         if self.current_hours < length:            
             return True
@@ -125,6 +128,7 @@ class Space(db.Model, Mix):
     name = db.Column(db.String(250), nullable=False) 
     equipments = db.relationship('Equipment', cascade="all,delete", backref='space', lazy=True)
     schedules = db.relationship('Schedule', cascade="all,delete", backref='space', lazy=True)
+    description = db.Column(db.String(250), nullable=False)
     spacetype_id = db.Column(db.Integer, db.ForeignKey('spacetype.id', ondelete='CASCADE', onupdate='CASCADE'),
         nullable=False)
     schedules = db.relationship("Schedule", back_populates="space")
@@ -133,6 +137,7 @@ class Space(db.Model, Mix):
             "id": self.id,
             "name": self.name,
             "spacetype_id": self.spacetype_id,
+            "description": self.description,
             "equipments": list(map(lambda x: x.serialize(), self.equipments)),
             "schedules": list(map(lambda x: x.serialize(), self.schedules))
         }

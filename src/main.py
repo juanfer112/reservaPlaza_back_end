@@ -11,9 +11,10 @@ from create_database import init_database
 from datetime import datetime, timedelta, date
 from date_convert import ConvertDate
 from flask_jwt_extended import (
-    JWTManager, jwt_required, create_access_token, create_refresh_token, jwt_refresh_token_required, get_jwt_identity
+    JWTManager, jwt_required, create_access_token, create_refresh_token, jwt_refresh_token_required, get_jwt_identity,get_raw_jwt
 )
 from sqlalchemy import extract
+from decorators.admin_required_decorator import admin_required
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -60,16 +61,17 @@ def login():
         return jsonify({"msg": "Missing password parameter"}), 400
     
     enterprise = Enterprise.get_enterprise_with_login_credentials(email,password)
-
+    
     if enterprise == None:
         return jsonify({"msg": "Bad email or password"}), 400
 
-    access_token = create_access_token(identity=enterprise.email)
-    
+    access_token = create_access_token(identity=enterprise.id)
+   
     ret = {
         'access_token': access_token,
-        'refresh_token': create_refresh_token(identity=enterprise.email),
-        'is_admin': enterprise.is_admin()
+        'refresh_token': create_refresh_token(identity=enterprise.id),
+        'is_admin': enterprise.verify_admin()
+        
     }
     return jsonify(ret), 200
 
@@ -91,19 +93,12 @@ def protected():
     current_user = get_jwt_identity()
     return jsonify(logged_in_as = current_user), 200
     
-#@app.route('/logout', methods=['DELETE'])
-#@jwt_required
-#def logout():
-#    jti = get_raw_jwt()['jti']
-#    blacklist.add(jti)
-#    return jsonify({"msg": "Successfully logged out"}), 200
-
 @app.route('/logout', methods=['DELETE'])
 @jwt_required
-def logged():
-    user_id = get_raw_identity()
+def logout():
+    jti = get_raw_jwt()['jti']
     blacklist.add(jti)
-    return jsonify(logged_in_as=user_id), 200
+    return jsonify({"msg": "Successfully logged out"}), 200
 
 
 @app.errorhandler(APIException)
@@ -122,12 +117,13 @@ def addCommitArray(arrayToSave):
     db.session.commit()
 
 @app.route('/enterprises', methods=['GET', 'POST'])
+@jwt_required
 def handle_enterprises():
     if request.method == 'GET':
         return jsonify(Enterprise.getAllSerialized()), 200 
     if request.method == 'POST':
         body = request.get_json()       
-        newEnterprise = Enterprise.newInstance(body)        
+        newEnterprise = Enterprise.newInstance(body)       
         newEnterprise.addCommit()
         return toJson(newEnterprise), 201
 

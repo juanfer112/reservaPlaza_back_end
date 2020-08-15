@@ -1,5 +1,6 @@
 ## Table of contents
-
+lsof -i tcp:3000
+kill -9 50386
 1. How to create an empty database
 2. How to create your models
 3. How to add endpoints

@@ -70,7 +70,8 @@ def login():
     ret = {
         'access_token': access_token,
         'refresh_token': create_refresh_token(identity=enterprise.id),
-        'is_admin': enterprise.verify_admin()
+        'is_admin': enterprise.verify_admin(),
+        'user': enterprise.serialize()
         
     }
     return jsonify(ret), 200
@@ -93,7 +94,7 @@ def protected():
     current_user = get_jwt_identity()
     return jsonify(logged_in_as = current_user), 200
     
-@app.route('/logout', methods=['DELETE'])
+@app.route('/logout', methods=['DELETE']) ############# Esto como se utiliza? Necesitamos pasarle un token ##################
 @jwt_required
 def logout():
     jti = get_raw_jwt()['jti']

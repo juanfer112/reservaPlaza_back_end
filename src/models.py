@@ -31,8 +31,6 @@ class Mix():
     @classmethod
     def get_enterprise_with_login_credentials(cls,email,password):
         return db.session.query(cls).filter(Enterprise.email==email).filter(Enterprise.password==password).one_or_none()
-    
-   
 
     def updateModel(self, body):           
         for attribute in body:
@@ -78,9 +76,6 @@ class Enterprise(db.Model, Mix):
             "brands": list(map(lambda x: x.serialize(), self.brands)),
             "schedules": list(map(lambda x: x.serialize(), self.schedules)) 
         }
-    
-    # def get_enterprise_with_login_credentials(self,email,password):
-        #return db.session.query().filter(self.email==email).filter(self.password==password).one_or_none()
 
     def verify_admin(self):  
         print()   #esta funcion retorna una respuesta de true o false, indicando si es administrador o no. 

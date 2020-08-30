@@ -38,6 +38,13 @@ blacklist=set()
 # login_manager.init_app(app)
 # login_manager.login_view='login'
 
+def toJson(model):
+    return jsonify(model.serialize())
+
+def addCommitArray(arrayToSave):
+    db.session.bulk_save_objects(arrayToSave)
+    db.session.commit()
+
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
     jti = decrypted_token['jti']
@@ -92,7 +99,7 @@ def refresh():
 def protected():
     # Access the identity of the current user with get_jwt_identity
     current_user = get_jwt_identity()
-    return jsonify(logged_in_as = current_user), 200
+    return Enterprise.getById(current_user).serialize(), 200
     
 @app.route('/logout', methods=['DELETE']) ############# Esto como se utiliza? Necesitamos pasarle un token ##################
 @jwt_required
@@ -109,13 +116,6 @@ def handle_invalid_usage(error):
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
-
-def toJson(model):
-    return jsonify(model.serialize())
-
-def addCommitArray(arrayToSave):
-    db.session.bulk_save_objects(arrayToSave)
-    db.session.commit()
 
 @app.route('/enterprises', methods=['GET', 'POST'])
 @jwt_required

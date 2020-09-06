@@ -30,7 +30,11 @@ setup_admin(app)
 app.config['JWT_SECRET_KEY'] = 'super-secret'
 app.config['JWT_BLACKLIST_'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+<<<<<<< HEAD
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
+=======
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 999999
+>>>>>>> 6f31517b31cb8804432eadc432aa91f4a28703f0
 jwt = JWTManager(app)
 
 blacklist=set()
@@ -101,14 +105,6 @@ def protected():
     # Access the identity of the current user with get_jwt_identity
     current_user = get_jwt_identity()
     return Enterprise.getById(current_user).serialize(), 200
-    
-@app.route('/logout', methods=['DELETE']) ############# Esto como se utiliza? Necesitamos pasarle un token ##################
-@jwt_required
-def logout():
-    jti = get_raw_jwt()['jti']
-    blacklist.add(jti)
-    return jsonify({"msg": "Successfully logged out"}), 200
-
 
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
@@ -117,6 +113,14 @@ def handle_invalid_usage(error):
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
+
+    
+@app.route('/logout', methods=['DELETE'])
+@jwt_required
+def logout():
+    jti = get_raw_jwt()['jti']
+    blacklist.add(jti)
+    return jsonify({"msg": "Successfully logged out"}), 200
 
 @app.route('/enterprises', methods=['GET', 'POST'])
 @jwt_required
@@ -168,6 +172,13 @@ def handle_schedule_before_after(date):
     end = start + timedelta(days=22)
     schedules = db.session.query(Schedule).filter(start < Schedule.date).filter(Schedule.date < end )
     return jsonify(list(map(lambda y: y.serialize(), schedules))), 200
+
+@app.route('/schedules/<id>', methods=['DELETE'])
+@jwt_required
+def delete_schedule(id):
+    schedule = Schedule.query.get(id) 
+    schedule.delete()
+    return jsonify({"msg": "Successfully deleted"}), 200
 
 @app.route('/schedules_by_month_and_year/<date>', methods=['GET'])
 @jwt_required

@@ -30,6 +30,7 @@ setup_admin(app)
 app.config['JWT_SECRET_KEY'] = 'super-secret'
 app.config['JWT_BLACKLIST_'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
 jwt = JWTManager(app)
 
 blacklist=set()
@@ -169,9 +170,11 @@ def handle_schedule_before_after(date):
     return jsonify(list(map(lambda y: y.serialize(), schedules))), 200
 
 @app.route('/schedules_by_month_and_year/<date>', methods=['GET'])
+@jwt_required
 def handle_schedule_by_month(date): 
     month_and_year_date = ConvertDate.stringToDate(date)
-    schedules = db.session.query(Schedule).filter(extract('month', Schedule.date) == month_and_year_date.month,extract('year', Schedule.date) == month_and_year_date.year).all()
+    current_user = get_jwt_identity()
+    schedules = db.session.query(Schedule).filter(current_user==Schedule.enterprise_id).filter(extract('month', Schedule.date) == month_and_year_date.month,extract('year', Schedule.date) == month_and_year_date.year).all()
     return jsonify(list(map(lambda y: y.serialize(), schedules))), 200
 
 @app.route('/schedules', methods=['POST'])

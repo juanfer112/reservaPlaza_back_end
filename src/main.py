@@ -30,6 +30,8 @@ setup_admin(app)
 app.config['JWT_SECRET_KEY'] = 'super-secret'
 app.config['JWT_BLACKLIST_'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 999999
+
 jwt = JWTManager(app)
 
 blacklist=set()
@@ -37,6 +39,13 @@ blacklist=set()
 # login_manager= LoginManager()
 # login_manager.init_app(app)
 # login_manager.login_view='login'
+
+def toJson(model):
+    return jsonify(model.serialize())
+
+def addCommitArray(arrayToSave):
+    db.session.bulk_save_objects(arrayToSave)
+    db.session.commit()
 
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
@@ -70,7 +79,8 @@ def login():
     ret = {
         'access_token': access_token,
         'refresh_token': create_refresh_token(identity=enterprise.id),
-        'is_admin': enterprise.verify_admin()
+        'is_admin': enterprise.verify_admin(),
+        'user': enterprise.serialize()
         
     }
     return jsonify(ret), 200
@@ -91,15 +101,7 @@ def refresh():
 def protected():
     # Access the identity of the current user with get_jwt_identity
     current_user = get_jwt_identity()
-    return jsonify(logged_in_as = current_user), 200
-    
-@app.route('/logout', methods=['DELETE'])
-@jwt_required
-def logout():
-    jti = get_raw_jwt()['jti']
-    blacklist.add(jti)
-    return jsonify({"msg": "Successfully logged out"}), 200
-
+    return Enterprise.getById(current_user).serialize(), 200
 
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
@@ -109,12 +111,13 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-def toJson(model):
-    return jsonify(model.serialize())
-
-def addCommitArray(arrayToSave):
-    db.session.bulk_save_objects(arrayToSave)
-    db.session.commit()
+    
+@app.route('/logout', methods=['DELETE'])
+@jwt_required
+def logout():
+    jti = get_raw_jwt()['jti']
+    blacklist.add(jti)
+    return jsonify({"msg": "Successfully logged out"}), 200
 
 @app.route('/enterprises', methods=['GET', 'POST'])
 @jwt_required
@@ -167,10 +170,19 @@ def handle_schedule_before_after(date):
     schedules = db.session.query(Schedule).filter(start < Schedule.date).filter(Schedule.date < end )
     return jsonify(list(map(lambda y: y.serialize(), schedules))), 200
 
+@app.route('/schedules/<id>', methods=['DELETE'])
+@jwt_required
+def delete_schedule(id):
+    schedule = Schedule.query.get(id) 
+    schedule.delete()
+    return jsonify({"msg": "Successfully deleted"}), 200
+
 @app.route('/schedules_by_month_and_year/<date>', methods=['GET'])
+@jwt_required
 def handle_schedule_by_month(date): 
     month_and_year_date = ConvertDate.stringToDate(date)
-    schedules = db.session.query(Schedule).filter(extract('month', Schedule.date) == month_and_year_date.month,extract('year', Schedule.date) == month_and_year_date.year).all()
+    current_user = get_jwt_identity()
+    schedules = db.session.query(Schedule).filter(current_user==Schedule.enterprise_id).filter(extract('month', Schedule.date) == month_and_year_date.month,extract('year', Schedule.date) == month_and_year_date.year).all()
     return jsonify(list(map(lambda y: y.serialize(), schedules))), 200
 
 @app.route('/schedules', methods=['POST'])

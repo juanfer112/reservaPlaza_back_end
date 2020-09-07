@@ -30,11 +30,7 @@ setup_admin(app)
 app.config['JWT_SECRET_KEY'] = 'super-secret'
 app.config['JWT_BLACKLIST_'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
-<<<<<<< HEAD
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
-=======
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 999999
->>>>>>> 6f31517b31cb8804432eadc432aa91f4a28703f0
 jwt = JWTManager(app)
 
 blacklist=set()
